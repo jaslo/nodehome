@@ -1,0 +1,652 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "package.json",
+			"settings":
+			{
+				"buffer_size": 699,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "globals.js",
+			"settings":
+			{
+				"buffer_size": 996,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "html/default.ejs",
+			"settings":
+			{
+				"buffer_size": 7566,
+				"line_ending": "Unix"
+			}
+		},
+		{
+			"file": "plugins/rcsx10b",
+			"settings":
+			{
+				"buffer_size": 206,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "plugins/rfx10.js",
+			"settings":
+			{
+				"buffer_size": 291,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "plugins/ti103.js",
+			"settings":
+			{
+				"buffer_size": 2361,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "ser2nextproxy.js",
+			"settings":
+			{
+				"buffer_size": 596,
+				"line_ending": "Windows"
+			}
+		},
+		{
+			"file": "/home/jasonl/krouter/relay_server/devicedb.js",
+			"settings":
+			{
+				"buffer_size": 0,
+				"line_ending": "Windows"
+			}
+		}
+	],
+	"build_system": "",
+	"command_palette":
+	{
+		"height": 392.0,
+		"selected_items":
+		[
+			[
+				"",
+				"Package Control: Install Package"
+			],
+			[
+				"Package Control: ",
+				"Package Control: Discover Packages"
+			],
+			[
+				"packa",
+				"Package Control: Install Package"
+			]
+		],
+		"width": 534.0
+	},
+	"console":
+	{
+		"height": 118.0
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"file_history":
+	[
+		"/M/jasonl/Documents/My Dropbox/mesh/dev/nodehome/ti103.js",
+		"/M/jasonl/Documents/My Dropbox/mesh/dev/nodehome/cronDevice.js",
+		"/M/jasonl/Documents/My Dropbox/mesh/dev/nodehome/test1.js",
+		"/M/jasonl/Documents/My Dropbox/mesh/dev/nodehome/testx.js",
+		"/M/jasonl/Documents/My Dropbox/mesh/dev/nodehome/test2.js",
+		"/M/jasonl/Documents/My Dropbox/mesh/dev/nodehome/html/default.html",
+		"/home/jasonl/Dropbox/mesh/dev/nodehome/eventlist.ejs",
+		"/home/jasonl/.config/sublime-text-2/Packages/User/View In Browser.sublime-settings",
+		"/home/jasonl/.config/sublime-text-2/Packages/View In Browser/View In Browser.sublime-settings",
+		"/home/jasonl/.config/sublime-text-2/Packages/User/Preferences.sublime-settings",
+		"/home/jasonl/Downloads/jquery-ui-1.10.3/demos/tabs/ajax/content1.html",
+		"/media/41cd5baa-7a62-4706-b8e8-02c43ccee8d9/etc/network/interfaces",
+		"/home/jasonl/krouter/relay_server/relays.js",
+		"/etc/apt/sources.list",
+		"/home/jasonl/Dropbox/mesh/work/krouter/relay_client/src/deviceid.c",
+		"/home/jasonl/krouter/relay_server/global.js",
+		"/media/C522-EA52/config.txt",
+		"/E/sierra/web/css/global.less",
+		"/C/Users/jloveman/work/relayServer/MAINTAINERS",
+		"/C/Users/jloveman/work/ozker/Makefile",
+		"/C/Users/jloveman/AppData/Roaming/Sublime Text 2/Packages/User/Preferences.sublime-settings",
+		"/C/Users/jloveman/work/relayServer/knode.js",
+		"/C/Users/jloveman/work/relayServer/tcppresence.js",
+		"/C/Users/jloveman/work/relayServer/udppresence.js",
+		"/C/Users/jloveman/work/relayServer/presence.js",
+		"/C/Users/jloveman/work/relayServer/devicedb.js",
+		"/C/Users/jloveman/work/relayServer/keepalivetest.js",
+		"/C/Users/jloveman/work/relayServer/relays.js",
+		"/C/Users/jloveman/work/relayServer/portAlloc.js",
+		"/C/Users/jloveman/work/relayServer/restServer.js",
+		"/C/Users/jloveman/work/relayServer/testudp.js",
+		"/C/Users/jloveman/work/relayServer/extend.js",
+		"/C/Users/jloveman/work/relayServer/htdocs/js/cloud.js",
+		"/C/Users/jloveman/work/relayServer/htdocs/js/admin.js",
+		"/C/Users/jloveman/work/relayServer/package.json",
+		"/C/Users/jloveman/work/relayServer/global.js",
+		"/C/Users/jloveman/work/relayServer/dbSchema.js",
+		"/C/Users/jloveman/work/relayServer/startrelay.cmd",
+		"/C/Users/jloveman/work/relayServer/htdocs/js/jquery-ui-1.8.13.custom.min.js",
+		"/C/Users/jloveman/Downloads/require.js",
+		"/C/Users/jloveman/work/relayServer/htdocs/cloud.json",
+		"/C/Users/jloveman/work/relayServer/expressUser.js",
+		"/C/Users/jloveman/work/relayServer/relayServer.sublime-project",
+		"/C/Users/jloveman/work/relayClient/client_relay.json",
+		"/C/Users/jloveman/work/build/src/openwrt_feed/relay_client/Makefile",
+		"/C/Users/jloveman/VirtualBox VMs/resizehd.cmd",
+		"/C/Users/jloveman/VirtualBox VMs/VBoxManage modifyhd %1.vdi --resize SIZE_IN_MB",
+		"/C/Users/jloveman/AppData/Roaming/Sublime Text 2/Packages/User/Nodejs.sublime-settings",
+		"/C/Users/jloveman/AppData/Roaming/Sublime Text 2/Packages/Nodejs/Nodejs.sublime-settings",
+		"/C/Users/jloveman/AppData/Roaming/Sublime Text 2/Packages/User/Default (Windows).sublime-keymap",
+		"/C/Users/jloveman/AppData/Roaming/Sublime Text 2/Packages/Default/Preferences.sublime-settings",
+		"/C/Users/jloveman/work/relayServer/clientpem.cmd",
+		"/C/Users/jloveman/work/relayServer/admin.js",
+		"/C/Users/jloveman/work/relayServer/httpsOptions.js",
+		"/C/Users/jloveman/work/relayServer/slicetest.js",
+		"/C/Users/jloveman/work/relayServer/htdocs/Admin.html",
+		"/C/Users/jloveman/work/relayServer/newServer.js",
+		"/C/Users/jloveman/work/relayServer/htdocs/testnodes.json",
+		"/C/Users/jloveman/work/relayServer/htdocs/index.html",
+		"/C/Users/jloveman/work/relayServer/htdocs/pgSystem.html",
+		"/C/Users/jloveman/work/relayServer/htdocs/pgWelcome.html",
+		"/C/Users/jloveman/work/relayServer/htdocs/js/pageCloud.js",
+		"/C/Users/jloveman/work/relayServer/htdocs/js/pageWelcome.js",
+		"/C/Users/jloveman/work/relayServer/htdocs/example.html",
+		"/C/Users/jloveman/work/stratus/Jsonrpc/qxtjsonrpccall.cpp",
+		"/C/Users/jloveman/work/serverRelay/global.js",
+		"/C/Users/jloveman/work/serverRelay/expressRest.js",
+		"/C/Users/jloveman/work/stratus/WebApp/WebApp.pro",
+		"/C/Users/jloveman/work/serverRelay/node_modules/optimist/example/nonopt.js",
+		"/C/Users/jloveman/work/serverRelay/node_modules/express/lib/application.js",
+		"/C/Users/jloveman/work/serverRelay/newServer.js",
+		"/C/Users/jloveman/work/stratus/WebApp/webservice.cpp",
+		"/C/Users/jloveman/work/serverRelay/relayc.js",
+		"/C/Users/jloveman/work/serverRelay/startrelay.cmd",
+		"/C/Users/jloveman/work/serverRelay/httpscode.js",
+		"/C/Users/jloveman/work/serverRelay/gatewayServer.js",
+		"/C/Users/jloveman/work/serverRelay/Document2",
+		"/C/Users/jloveman/work/serverRelay/newhttps.js",
+		"/C/Users/jloveman/work/serverRelay/relayserver.js",
+		"/C/Users/jloveman/work/stratus/gwClient/gwClient.c",
+		"/C/Users/jloveman/work/stratus/gwClient/gatewayclient.c",
+		"/C/Users/jloveman/work/pagetest/test1.html",
+		"/C/Program Files/iisnode/www/helloworld/web.config",
+		"/C/Program Files/iisnode/www/web.config",
+		"/C/Users/jloveman/work/web.config",
+		"/C/Program Files/iisnode/www/proxytest/web.config"
+	],
+	"find":
+	{
+		"height": 34.0
+	},
+	"find_in_files":
+	{
+		"height": 0.0,
+		"where_history":
+		[
+			"*.js,-*.bak,*.c,*.h,*.html",
+			"*.js,-*.bak,*.c,*.h",
+			"*.js,-*.bak,*.c",
+			"*.js,-*.bak",
+			"*.js",
+			"<open folders>\\*.js",
+			""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"relay client:",
+			"\"data",
+			"portSave",
+			"socket closed",
+			"leftoverData",
+			".headerlength",
+			".sequence",
+			"headerstr",
+			"baseRelayUrl",
+			"LOG_TRACE",
+			"SendUserCommand",
+			"KeepAliveUDPPort",
+			"Searching",
+			"keepaliveudpport",
+			"Searching",
+			"keepaliveudp",
+			"socketmap",
+			"error saving",
+			"presence",
+			"UdpServer",
+			"g.udpserver",
+			"update",
+			"device not found1",
+			"SendUserCommand",
+			"SendUdpCommandAck",
+			"udpin.port",
+			"KeepAliveChecker",
+			"relay client",
+			"switch stream",
+			"getdevice",
+			"startrelay",
+			"/menu",
+			"admin.js",
+			"dialog-devedit",
+			"edit",
+			"/administration",
+			"ajax",
+			"content",
+			"#edAccount",
+			"dialog-edit",
+			"fetchAccountDevices",
+			"got account",
+			"/cloud/connect",
+			"cloud connect fail",
+			"302",
+			"next relay socket",
+			"failed to get",
+			"provisionurl",
+			"newregisterurl",
+			"loginurl",
+			"provisionurl",
+			"newregisterurl",
+			"loginurl",
+			"provisionurl",
+			"registerurl",
+			"provpass",
+			"loginuser",
+			"provisionurl",
+			"newregisterurl",
+			"registerurl",
+			"loginurl",
+			"loginuser",
+			"json_unpack(root,\"{s:I, s:s, s:o}\",\"digest\",&digest,\"status\",&status, \"msg\", &msg);",
+			"got account",
+			"shutdown",
+			"sendusercommand",
+			"presence.",
+			"shutdown",
+			"Shutdown",
+			"shutdown",
+			"shtudown",
+			"StartRelay",
+			"keys",
+			"/admini",
+			"req.para",
+			"req.par",
+			"got account",
+			"account",
+			"CreateModifyDevice",
+			"createDevice",
+			"dialog-login",
+			"RelayUseHttp",
+			"currentUrl",
+			"relay client ",
+			"nn",
+			"header",
+			"saveSocket",
+			"headerstr",
+			"rinfo",
+			"SendUserCommand",
+			"baseRelayUrl",
+			"tunnel",
+			"util",
+			"SendUserCommand",
+			"CreateModifyDevice",
+			"getDevice",
+			"IPUsers",
+			"CreateModifyDevice",
+			"createDevice",
+			"computge",
+			"CreateModifyDevice",
+			"SendUserCommand",
+			"presence",
+			"rinfo",
+			"SendUserCommand",
+			"SendIPCommand",
+			"iprouters",
+			"computedig",
+			"UserRouters",
+			"udpserver",
+			"computeDigest",
+			"SendUserCommand",
+			"computeDigest",
+			"UserRouters",
+			".relay",
+			"g.UserRouters",
+			"relay",
+			"1234",
+			"substring",
+			"currentUrl"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"KeepAlivePort"
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 2,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "package.json",
+					"settings":
+					{
+						"buffer_size": 699,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								553,
+								553
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JSON.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 1,
+					"file": "globals.js",
+					"settings":
+					{
+						"buffer_size": 996,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								789,
+								789
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage",
+							"tab_size": 4,
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 2,
+					"file": "html/default.ejs",
+					"settings":
+					{
+						"buffer_size": 7566,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								3552,
+								3552
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/HTML/HTML.tmLanguage",
+							"translate_tabs_to_spaces": true
+						},
+						"translation.x": 0.0,
+						"translation.y": 1114.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 3,
+					"file": "plugins/rcsx10b",
+					"settings":
+					{
+						"buffer_size": 206,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								151,
+								151
+							]
+						],
+						"settings":
+						{
+							"auto_name": "",
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 4,
+					"file": "plugins/rfx10.js",
+					"settings":
+					{
+						"buffer_size": 291,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								98,
+								101
+							]
+						],
+						"settings":
+						{
+							"auto_name": "",
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 5,
+					"file": "plugins/ti103.js",
+					"settings":
+					{
+						"buffer_size": 2361,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								2177,
+								2304
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 840.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 6,
+					"file": "ser2nextproxy.js",
+					"settings":
+					{
+						"buffer_size": 596,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								493,
+								493
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				},
+				{
+					"buffer": 7,
+					"file": "/home/jasonl/krouter/relay_server/devicedb.js",
+					"settings":
+					{
+						"buffer_size": 0,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/JavaScript/JavaScript.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 0.0
+	},
+	"input":
+	{
+		"height": 30.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.exec":
+	{
+		"height": 94.0
+	},
+	"output.git":
+	{
+		"height": 94.0
+	},
+	"replace":
+	{
+		"height": 0.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"selected_items":
+		[
+			[
+				"dev",
+				"devicedb.js"
+			],
+			[
+				"listen",
+				"node_modules/optimist/example/nonopt.js"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 500.0,
+		"selected_items":
+		[
+		],
+		"width": 380.0
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 166.0,
+	"status_bar_visible": true
+}

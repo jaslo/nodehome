@@ -1,0 +1,16 @@
+
+
+function rcx10b() {
+	
+	this.driver = {
+		name: 'rcsx10b', 
+		idtype: 'thermostat', 
+		uses:'ti103',
+		id:'H',
+    	cmds:['setheat', 'setcool'],
+    	events:['temp']
+	};
+}
+
+
+module.exports = new rcx10b();

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>NodeHome Main Page</title>
+    <link rel="stylesheet" href="themes/base/jquery.ui.all.css">
+    <script src="jquery-1.9.1.js"></script>
+    <script src="jquery-ui.js"></script>
+<!--    <script src="../../ui/jquery.ui.core.js"></script>
+    <script src="../../ui/jquery.ui.widget.js"></script>
+    <script src="../../ui/jquery.ui.tabs.js"></script>
+-->
+    <link rel="stylesheet" href="demos.css">
+    <script>
+
+    var deviceHtml = "<table><tr><td>run</td><td>edit</td><td>trigger</td>"
+        + "<td>Actions</td></table>";
+
+
+    function getEventTable(evselector) {
+        $.ajax({
+            type: 'GET',
+            url: '/event'
+        })
+        .done(function(data, textStatus, jqXHR) {
+            // build html from the JSON returned
+            var htmlstr = '<table border="1">' +
+                '<tr><td>run</td><td>edit</td><td>trigger</td><td>Actions</td></tr>';
+            $.each(data, function (id) {
+                var val = data[id];
+                htmlstr += '<tr>' +
+                '<td><input type="button" name="run" value="run"/></td>' +
+                '<td><a href="#">' + val.name + '</a></td>' +
+                '<td><a href="#">' + val.trigger + '</a></td>' +
+                '<td><table><tr><td><a href="#">Actions</a></td></tr>';
+                $.each(val.actions, function (act) {
+                    htmlstr += '<tr><td>' + val.actions[act] + '</td></tr>';
+                });
+                htmlstr += '</table></td></tr>';
+            });
+            htmlstr += '</table>';
+
+            $(evselector).html(htmlstr);
+
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            alert("failure getting event table");
+        });
+    }
+
+
+    function editDialog(selector) {
+        $(selector).dialog({modal: true, buttons: [ 
+            { text: "Ok", click: function() {
+                $( this ).dialog( "close" ); 
+            }},
+            { text: "Cancel", click: function() {
+                $( this ).dialog( "close" ); 
+            }} 
+            ]
+        });
+        $(selector).css('visibility','visible');
+    }
+
+    function lookupDriver(drivername,selector) {
+
+    }
+
+    $(function() {
+        $("#maintabs").tabs();
+        $("#eventDialogTabs").tabs();
+        $( "input[type=submit], a, button" )
+            .button()
+            .click(function( event ) {
+                event.preventDefault();
+            });
+
+        getEventTable("#tabs-2");
+        //setTimeout(function() {
+        //    $("#tabs-2").html(deviceHtml);
+        //},5000);
+    });
+    </script>
+</head>
+<body>
+
+<div id="maintabs">
+    <ul>
+        <li><a href="#tabs-x">Devices</a></li>
+        <li><a href="#tabs-1">Events test</a></li>
+        <li><a href="#tabs-2">Events</a></li>
+        <li><a href="#tabs-3">Setup</a></li>
+    </ul>
+    <div id="tabs-x">
+        <a href="#" onclick="editDialog('#deviceDialog')">Add Device</a>
+        <a href="#" onclick="editDialog('#eventDialog')">Add Event</a>
+    </div>
+    <div id="tabs-1">
+        <table border="1">
+            <tr><td>run</td><td>edit</td><td>trigger</td><td>Actions</td></tr>
+            <tr>
+                <td><input type="button" name="run" value="run"/></td>
+                <td><a href="#">eventname</a></td>
+                <td><a href="#">when device kitchen button1 on</a></td>
+                <td>
+                    <table><tr><td><a href="#">Actions</a></td></tr>
+                        <tr><td>run event 'bedtime dingding'</td></tr>
+                        <tr><td>set device front lights on after 30 minutes</td></tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div id="tabs-2">
+        <p>Loading...</p>
+    </div>
+    <div id="tabs-3">
+        <p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
+        <p>Duis cursus. Maecenas ligula eros, blandit nec, pharetra at, semper at, magna. Nullam ac lacus. Nulla facilisi. Praesent viverra justo vitae neque. Praesent blandit adipiscing velit. Suspendisse potenti. Donec mattis, pede vel pharetra blandit, magna ligula faucibus eros, id euismod lacus dolor eget odio. Nam scelerisque. Donec non libero sed nulla mattis commodo. Ut sagittis. Donec nisi lectus, feugiat porttitor, tempor ac, tempor vitae, pede. Aenean vehicula velit eu tellus interdum rutrum. Maecenas commodo. Pellentesque nec elit. Fusce in lacus. Vivamus a libero vitae lectus hendrerit hendrerit.</p>
+    </div>
+</div>
+
+<div class="demo-description">
+<p>Click tabs to swap between content that is broken into logical sections.</p>
+</div>
+
+<div id="deviceDialog" title="Add a device" style="visibility:hidden">
+    <table>
+        <tr>
+            <td>Device driver</td>
+            <td><input onblur="lookupDriver(this.value,'#deviceDialog')" type="text" size="20">
+                </td>
+        </tr>
+        <tr>
+            <td>Device name</td><td><input type="text" size="20"></td>
+        </tr>
+        <tr>
+            <td>Device location</td>
+            <td><input type="text" size="20"></td>
+        </tr>
+        <tr>
+            <td>Device id</td>
+            <td><input type="text" size="20"></td>
+        </tr>
+    </table>
+  <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
+</div>
+
+<div id="eventDialog" title="Add an event" style="visibility:hidden">
+    Event name: <input type="text" size="20">
+    <div id="eventDialogTabs">
+    <ul>
+        <li><a href="#tabs-trigger">Trigger</a></li>
+        <li><a href="#tabs-action">Actions</a></li>
+    </ul>
+    <div id="tabs-trigger">
+    <table>
+        <tr>
+            <td><select>trigger on
+                <option>run event</option>
+                <option>set device</option>
+                <option>none</option>
+            </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Device driver</td>
+            <td><input onblur="lookupDriver(this.value,'#deviceDialog')" type="text" size="20">
+                </td>
+        </tr>
+        <tr>
+            <td>Device id</td>
+            <td><input type="text" size="20"></td>
+        </tr>
+        <tr>
+            <td>Trigger state</td>
+            <td><input type="text" size="20"></td>
+        </tr>
+    </table>
+    </div>
+    <div id="tabs-actions">
+        actions stuff
+    </div>
+
+
+
+</body>
+</html>

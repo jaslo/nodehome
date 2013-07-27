@@ -1,0 +1,76 @@
+var mongojs = require("mongojs"),
+    Deferred = require("JQDeferred"),
+    mongoose = require("mongoose"),
+    g = require("./global");
+
+var ObjectId = mongoose.Schema.Types.ObjectId;
+
+/*
+devices (name, type)
+x10
+thermostat
+"timer"
+"state"
+events (name, type)
+triggers
+time-based (incl sunrise, sunset)
+device-based (x10 status, change)
+actions
+event (run)
+script
+device (trigger, start timer, x10 on/off/dim)
+meta
+sound, speech
+*/
+
+
+
+var deviceSchema = new mongoose.Schema({
+    name: String,
+    location: String,
+    group: String,
+    typeName: String, // x10, timer, variable
+    driver: String,
+    id: String,
+    value: String
+});
+
+var triggerSchema = new mongoose.Schema({
+    typeName: String, // device (variable, timer)
+    id: String,
+    value: String
+});
+
+var actionSchema = new mongoose.Schema({
+    typeName: String, // device, event, script, sound, speech
+    id: String, // subject: A10, timer1, "lights off", "file.wav", "Hello World"
+    value: String //verb: on/off/dim, start, execute, loadrun, play, speak
+});
+
+var eventSchema = new mongoose.Schema({
+    name: String,
+    typeName: String,
+    trigger: triggerSchema,
+    actions: [ actionSchema ]
+});
+
+
+var accountDeviceSchema = new mongoose.Schema({
+    macid: String,
+    accountid: mongoose.Schema.Types.ObjectId,
+    account: String,
+    devname: String,
+    devdescr: String
+});
+
+
+/* accountSchema.methods.setFields = function(name, first, last, level, cb) {
+    if (name) this.account = name;
+    if (first) this.firstname = first;
+    if (last) this.lastname = last;
+    if (level) this.level = level;
+    this.save(function(err, obj) {
+        if (cb) cb(err,obj);
+    });
+}
+*/
