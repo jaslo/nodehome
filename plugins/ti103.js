@@ -2,6 +2,7 @@
 var driverBase = require("./driverBase");
 var util = require("util");
 var g = require("../globals");
+var ser2netproxy = require("../ser2netproxy.js");
 
 function ti103() {
 
@@ -17,29 +18,28 @@ function ti103() {
 	    if ((basedev[0] == '/') || basedev.startsWith("COM")) {
 	    	nodeser = new require("serialport").SerialPort(basedev, { baudrate: 19200 });
 	    }
-	    else if (IsNumeric(basedev[0])) {
+	    else if (basedev[0].match(/^[0-9]/)) {
 	    	var ncolon = basedev.indexOf(':');
-	    	nodeser = new require("ser2netproxy")({host: basedev.substring(0,ncolon), port:basedef.substring(ncolon+1)});
+	    	nodeser = new ser2netproxy({host: basedev.substring(0,ncolon), port:basedev.substring(ncolon+1)});
 	    }
-	    /*
-	    Sending an extended code message to an extended code dimmer:
-	    To TI103-RS232: $>28001A[1]013F31A[1]013F312D#
-	    Response: $<2800!4B#
-	    */
-
+        if (!nodeser) {
+        	console.log("failure to initialize device")
+        	return null;	
+        } 
 
 	    nodeser.on("open", function() {
 	        nodeser.on('data', function(data) {
                 // wait until last byte is '#' ?
-	            bufferedin += data;   
+	            bufferedin += data;
 	            if (!expectResults) {
 	            	console.log("unsolicited data: " + data);
 	            }
 	        });
+			// opened, can now start reading and writing
+	        checkStatusLoop();
 	    });
-        checkStatus();
 	}
-	
+
     var readser = function() {
         var s = bufferedin;
         bufferedin = "";
@@ -63,7 +63,7 @@ function ti103() {
 
             // after the ack or nack
             // do a query doquery() for the "echo back"
-	    	
+
 	    	// strip the header and checksum
 	    	str = str.substring(6);
 	    	if (str[0] == "!") return 0; // accepted
@@ -73,20 +73,23 @@ function ti103() {
 	    /*
 	    Response: $<2800! P01P01 PONPON P02P02 PBGTPBGTPBGTPBGTPBGTPBGTPBGT
 	    P03P03 POFFPOFF P04P04 PDIMPDIMPDIMPDIMPDIMPDIM46#
-	    */	
+	    */
         // parse and publish
                 var skipcheck = str.length - 3;
                 for (j = 1; j < skipcheck; j++) {
                     var house;
                     var unit;
                     var val;
+                    var house1;
+                    var level;
                     // first get unit codes
                     while (true) {
                         while (str[j] == ' ') j++;
-                        house = str[j++];
-                        if (isDigit(str[j]) {
+                        house1 = str[j++];
+                        if (isDigit(str[j])) {
                             unit = str.substring(j,j+2);
                             j += 2;
+                            house = house1;
                         }
                         else break;
                     }
@@ -95,8 +98,12 @@ function ti103() {
                         val = 'ON';
                     } else {
                         val = substring(j,j+3);
+                        if (val == "PR0") {
+                            level = house1;
+                        }
                     }
                     var id = house + unit;
+                    console.log("got x10 " + id + ", value is " + states[id]);
                     if (!states[id] || states[id] != val) {
                         states[id] = val;
                         self.publish(id,val);
@@ -117,10 +124,10 @@ function ti103() {
     // call doquery on a timer?
     // keep sending 'query' until $<2800!4B# is returned?
 
-    var checkStatus = function() {
+    var checkStatusLoop = function() {
     	sendser("$>2800008C#");
-    	initializegetresults();
-        setTimeout(doquery,500);
+    	getresults();
+        //setTimeout(checkStatusLoop,5000);
     }
 
     /*
@@ -141,15 +148,15 @@ H 12initialize
 K 13
 L 14
 I 15
-J 16 
+J 16
 
     query response
-    $<2800! K05 NPR0NPR0 K15K15 BPR0BPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 
+    $<2800! K05 NPR0NPR0 K15K15 BPR0BPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04
     OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K05K05 OPR0OPR0 K06K06
-     OPR0OPR0 K05 OPR0OPR0 K06K06 OPR0OPR0 K03K03 BPR0BPR0 K03K03 
-     BPR0BPR0 K03K03 BPR0BPR0 K03K03 BPR0BPR0 K03K03 BPR0BPR0 K03K03 
-     BPR0BPR0 K05K05 NPR0NPR0 K15K15 BPR0BPR0 K05 NPR0NPR0 K15K15 BPR0BPR0 
-     K04K04 DPR0DPR0 K04K04 DPR0DPR0 K04K04 DPR0DPR0 K04K04 DPR0DPR0 K04K04 
+     OPR0OPR0 K05 OPR0OPR0 K06K06 OPR0OPR0 K03K03 BPR0BPR0 K03K03
+     BPR0BPR0 K03K03 BPR0BPR0 K03K03 BPR0BPR0 K03K03 BPR0BPR0 K03K03
+     BPR0BPR0 K05K05 NPR0NPR0 K15K15 BPR0BPR0 K05 NPR0NPR0 K15K15 BPR0BPR0
+     K04K04 DPR0DPR0 K04K04 DPR0DPR0 K04K04 DPR0DPR0 K04K04 DPR0DPR0 K04K04
      DPR0DPR0 K04K04 DPR0DPR0 K05K05 PPR0PPR0 K06K06 DPR0DPR0 K05 PPR0PPR0 K06K06 DPR0DPR0                                                                0D
 
 
@@ -167,10 +174,10 @@ J 16
     K6 DPR0                = report fan auto
 
 id
-#$<2800! D06D06 DONDON D16D16 DONDON D16D16 DOFFDOFF B02B02 BOFFBOFF B02B02 BOFFBOFF D16D16 DONDON D16D16 DOFFDOFF 
-D16D16 DONDON D16D16 DOFFDOFF B02B02 BOFFBOFF D11D11 DOFFDOFF 
+#$<2800! D06D06 DONDON D16D16 DONDON D16D16 DOFFDOFF B02B02 BOFFBOFF B02B02 BOFFBOFF D16D16 DONDON D16D16 DOFFDOFF
+D16D16 DONDON D16D16 DOFFDOFF B02B02 BOFFBOFF D11D11 DOFFDOFF
 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K05K05 OPR0OPR0 K06K06 OPR0OPR0 K05 OPR0OPR0 K06K06 OPR0OPR0 K03K03 BPR0BPR0 K03K03 BPR0BPR0 K03K03 BPR0BPR0 K03K03 BPR0BPR0 K03K03 BPR0BPR0 K03K03 BPR0BPR0 K05K05 NPR0NPR0 K15K15 BPR0BPR0 K05 NPR0NPR0 K15K15 BPR0BPR0 D05D05 DOFFDOFF                                                                5D#
-    
+
     request temp = K5 MPR0
 
     */

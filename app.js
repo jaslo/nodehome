@@ -126,6 +126,13 @@ app.get("/device", function(req,res) {
 app.post("/event", function(req,res) {
 });
 
+app.get("/cmd/event"), function (req,res) {
+    var e = eventmap[req.parm.name];
+    runEventActions(e);
+    // /cmd/event?name=driveway
+    // /cmd/device?name=doorbell&val=on
+}
+
 
 //get events
 //TODO: should return JSON not html

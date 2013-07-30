@@ -5,6 +5,9 @@ var path = require("path"),
 
 var g = {
 
+    ti103init: "192.168.0.143:2000",
+    acrf2init: "/dev/nul",
+
     MongoHost: "localhost",
     htmlBase: path.join(__dirname,"/html"),
 
@@ -50,6 +53,11 @@ g.devices = [
 	{ name: 'cron', driver: 'cron' }, // system device
 	{ name: 'sun', driver: 'sun' }, // system device
 
+	{name: "downstairs switch 1", location: "downstairs", driver:'ti103',id:'F1'},
+	{name: "downstairs switch 2", location: "downstairs", driver:'ti103',id:'F2'},
+	{name: "downstairs switch 3", location: "downstairs", driver:'ti103',id:'F3'},
+	{name: "downstairs switch 4", location: "downstairs", driver:'ti103',id:'F4'},
+
     { name: 'Rear 2', location: 'sprinklers', driver: 'ti103', id: 'O5' },
     { name: 'Rear 1', location: 'sprinklers', driver: 'ti103', id: 'O4' },
     { name: 'Lawn 1', location: 'sprinklers', driver: 'ti103', id: 'O1' },
@@ -70,7 +78,7 @@ g.devices = [
 
     { name: 'Doorbell', location: 'outside', group:'motion', driver:'ti103',id:'B6'},
     { name: 'Back Doorbell', location: 'outside', group:'motion', driver:'ti103',id:'B8'},
-// fake devices    
+// fake devices
     {
     name: 'front lights',
     location: 'front',
@@ -94,10 +102,24 @@ g.devices = [
 	{ name:"atticswitchpanel2",location:"attic",driver:'ti103',id: 'F2'},
 	{ name:"atticswitchpanel3",location:"attic",driver:'ti103',id: 'F3'},
 
-	{ name: 'drivewayrx', driver: 'virtual', id: 'drivewayrx'},
+	// for variables, the id should be the same as the name
+	{ name: 'drivewayrx', driver: 'variables', id: 'drivewayrx'},
+	{ name: 'virtual test', driver: 'variables', id: 'virtual test'}
 ];
 
 g.events = [
+{ name: "handle switch1", trigger: 'downstairs switch 1', actions: [
+	{ do: 'event', name: 'cascade', delay: "1min"},
+	{ do: 'speak', name: 'switch 1 actions'},
+	{ do: 'device', name: 'virtual test', value: 'set', parm: 'end switch 1'}
+]},
+{ name: "cascade", actions: [
+	{ do: 'speak', name: 'running cascade now'},
+	{ do: 'device', name: 'virtual test', value: 'set', parm: 'end cascade', delay: "2min"}
+]}
+];
+/*
+
 { name: 'bedtime dingding', actions: [
     { do: 'device', name: "thermo", value: "setheat", parm: "60"},
     { do: 'device', name: "thermo", value: "setcool", parm: "75"},
@@ -136,7 +158,7 @@ g.events = [
     ]
 }
 ];
-
+*/
 
 
 if (!String.prototype.hasOwnProperty("endsWith")) {

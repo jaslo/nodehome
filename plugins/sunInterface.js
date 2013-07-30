@@ -1,5 +1,5 @@
 var http = require("http");
-
+var citytimes = require("../cities.js")
 function SunInterface() {
 	// get locale and sunrise/sunset times
 
@@ -149,7 +149,7 @@ function SunInterface() {
     var onedaytime = 24 * 3600 * 1000;
 
     var latitude;
-    var longit;
+    var longitude;
 
     function getCities() {
         return citygeo;
@@ -240,13 +240,16 @@ function SunInterface() {
     	events: ['rise','set']
     };
 
-    var carray = rawcities;
-    for (var i = 0; i < rawcities.length; i += 6) {
-        var lat = rawcities[i+1] + parseInt(rawcities[i+2])/60; // 13 N
-        var longit = rawcities[i+3] + parseInt(rawcities[i+4])/60; // 120 W
-        if (rawcities[i+2].endsWith('S')) lat = -lat;
-        if (rawcities[i+4].endsWith('W')) longit = -longit;
-        citygeo[rawcities[i]] = {'lat': lat, 'long': longit };
+    var carray = citytimes;
+    for (var i = 0; i < carray.length; i += 6) {
+		if (!carray[i+2] || !carray[i+4]) {
+        	console.log("i " + i + " carray " + carray[i]);
+        }    	
+        var lat = carray[i+1] + parseInt(carray[i+2])/60; // 13 N
+        var longit = carray[i+3] + parseInt(carray[i+4])/60; // 120 W
+        if (carray[i+2].endsWith('S')) lat = -lat;
+        if (carray[i+4].endsWith('W')) longit = -longit;
+        citygeo[carray[i]] = {'lat': lat, 'long': longit };
     }
     // start it up
     gettimes();

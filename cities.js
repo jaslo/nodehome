@@ -5,7 +5,7 @@ var citytimes = [
 "Aberdeen, Scotland",57,"9 N",2,"9 W","5:00 p.m.",
 "Adelaide, Australia",34,"55 S",138,"36 E","2:30 a.m.",
 "Albany, N.Y.",42,"40 N",73,"45 W","12:00 p.m.",
-"Albuquerque, N.M.",35,,"5, N",106,,"39, W""10:00 a.m.",
+"Albuquerque, N.M.",35,"5 N",106,"39 W","10:00 a.m.",
 "Algiers, Algeria",36,"50 N",3,"0 E","6:00 p.m.",
 "Amarillo, Tex.",35,"11 N",101,"50 W","11:00 a.m.",
 "Amsterdam, Netherlands",52,"22 N",4,"53 E","6:00 p.m.",
@@ -252,3 +252,5 @@ var citytimes = [
 "Winnipeg, Man., Can.",49,"54 N",97,"7 W","11:00 a.m.",
 "Zurich, Switzerland",47,"21 N",8,"31 E","8:00 a.m.",
 ];
+
+module.exports = citytimes;

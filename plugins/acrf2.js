@@ -2,6 +2,7 @@
 var driverBase = require("./driverBase");
 var util = require("util");
 var g = require("../globals");
+var ser2netproxy = require("../ser2netproxy.js");
 
 function acrf() {
 
@@ -9,7 +10,7 @@ function acrf() {
     var nodeser;
     var bufferedin = "";
 
-    var housebits[] = { 0x06, 0x0e, 0x02, 0x0a, 0x01, 0x09, 0x05, 0x0d, 0x07, 0x0f, 0x03, 0x0b, 0x00, 0x08, 0x04, 0x0c };
+    var housebits = [ 0x06, 0x0e, 0x02, 0x0a, 0x01, 0x09, 0x05, 0x0d, 0x07, 0x0f, 0x03, 0x0b, 0x00, 0x08, 0x04, 0x0c ];
 
     driverBase.call(this);
 
@@ -17,13 +18,15 @@ function acrf() {
         if ((basedev[0] == '/') || basedev.startsWith("COM")) {
             nodeser = new require("serialport").SerialPort(basedev, { baudrate: 19200 });
         }
-        else if (IsNumeric(basedev[0])) {
+	    else if (basedev[0].match(/^[0-9]/)) {
             var ncolon = basedev.indexOf(':');
-            nodeser = new require("ser2netproxy")({host: basedev.substring(0,ncolon), port:basedef.substring(ncolon+1)});
+            nodeser = new ser2netproxy({host: basedev.substring(0,ncolon), port:basedev.substring(ncolon+1)});
         }
-        */
-
-
+        if (!nodeser) {
+        	console.log("failure to initialize device")
+        	return null;	
+        } 
+        
         nodeser.on("open", function() {
             nodeser.on('data', function(data) {
                 // wait until last byte is '#' ?

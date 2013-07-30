@@ -47,12 +47,13 @@ function acrf() {
 
     }
 
-
+/*
     this.driver = {
  		name: 'acrf', idtype: 'x10',
     	cmds: ['on','off', 'dim','bright'],
     	events: ['on','off']
     };
+*/    
 }
 
 

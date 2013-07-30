@@ -110,6 +110,7 @@ function executeAction(a) {
 			runEventActions(a.name);
 			break;
 		case 'speak':
+			console.log("speaking: " + a.value);
 			break;
 	}
 }
@@ -129,6 +130,12 @@ for (var i in pluginfiles) {
     			d1.driver.obj = d1;
     			drivermap[d1.driver.name] = d1.driver;
     			console.log("got driver: " + d1.driver.name);
+                // check for a driver init param
+                var namepart = p.substring(0,p.length-3); // cut off .js
+                if (g[namepart + "init"] && d1.initialize) {
+                    d1.initialize(g[namepart + "init"]);
+                }
+
     		}
     	}
     	catch (ex) {

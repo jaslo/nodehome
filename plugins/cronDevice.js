@@ -8,6 +8,8 @@
 //  * * * * #2 5  is second friday of every month
 // * * * * L 1 is last monday of every month
 
+// this does not need the base class, since it handles its own subscribe
+// should probably add it anyway and let subscribe override
 var cronjob = require("cron").CronJob;
 
 function cronDevice() {
