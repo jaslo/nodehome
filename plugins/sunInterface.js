@@ -1,6 +1,7 @@
 var http = require("http");
 var citytimes = require("../cities.js")
 function SunInterface() {
+    var self = this;
 	// get locale and sunrise/sunset times
 
 	// hourangle = acos((sin(-.83degrees) - sin(phi) x sin(delta))/(cos(phi) * cos(delta));
@@ -148,16 +149,21 @@ function SunInterface() {
 
     var onedaytime = 24 * 3600 * 1000;
 
-    var latitude;
-    var longitude;
-
+    this.location = {
+        'latitude': 0,
+        'longitude': 0,
+        'city': null,
+        'rise': null,
+        'set' : null,    
+    };
+    
     function getCities() {
         return citygeo;
     }
 
     function setLocation(lat,longit) {
-        latitude = lat;
-        longitude = longit;
+        self.location.latitude = lat;
+        self.location.longitude = longit;
         gettimes();
     }
 
@@ -166,7 +172,7 @@ function SunInterface() {
         var mm = d.getMonth();
         var yy = d.getYear() + 1900;
         var dd = d.getDate();
-        return calc(mm+1, yy,dd,latitude,longitude,rise);
+        return calc(mm+1, yy,dd,self.location.longitude,self.location.latitude,rise);
     }
 
 
@@ -179,6 +185,7 @@ function SunInterface() {
     var tset;
 
     function waitForRise() {
+        self.location.rise = trise;
         setTimeout(function () {
         	for (r in risers) {
         		risers[r]();
@@ -190,6 +197,7 @@ function SunInterface() {
     }
 
     function waitForSet() {
+        self.location.set = tset;
         setTimeout(function() {
         	for (s in setters) {
         		setters[s]();
@@ -204,14 +212,14 @@ function SunInterface() {
     function gettimes() {
 //        var t1 = calc(6, 1990,25,-74.3,40.9,true);
         risedate = new Date();
-        var trise = calc1(risedate,true);
+        trise = calc1(risedate,true);
         if (risedate > trise) {
         	risedate = new Date(risedate.getTime() + onedaytime);
         	trise = calc1(risedate,true);
         }
 
         setdate = new Date();
-        var tset = calc1(setdate,false);
+        tset = calc1(setdate,false);
         if (setdate > tset) {
         	setdate = new Date(setdate.getTime() + onedaytime);
         	tset = calc1(setdate,false);
@@ -222,6 +230,35 @@ function SunInterface() {
 // and recalc times
     }
 
+    var carray = citytimes;
+
+    this.initialize = function (initparm) {
+        for (var i = 0; i < carray.length; i += 6) {
+            if (!carray[i+2] || !carray[i+4]) {
+                console.log("i " + i + " carray " + carray[i]);
+            }       
+            var lat = carray[i+1] + parseInt(carray[i+2])/60; // 13 N
+            var longit = carray[i+3] + parseInt(carray[i+4])/60; // 120 W
+            if (carray[i+2].endsWith('S')) lat = -lat;
+            if (carray[i+4].endsWith('W')) longit = -longit;
+            citygeo[carray[i]] = {'lat': lat, 'long': longit };
+        }
+        if ((arguments.length == 1) && citygeo[arguments[0]]) {
+            self.location.city = arguments[0];
+            self.location.latitude = citygeo[arguments[0]].lat;
+            self.location.longitude = citygeo[arguments[0]].long;
+        }
+        else {
+            self.location.latitude = arguments[0];
+            self.location.longitude = arguments[1];
+        }
+
+        gettimes();
+    }
+
+
+    this.currentSunrise = function() { return trise; }
+    this.currentSunset = function() { return tset; }
 
 	this.subscribe = function(name, val, cb) {
         if (val == 'rise') {
@@ -239,20 +276,6 @@ function SunInterface() {
  		name: 'sun',
     	events: ['rise','set']
     };
-
-    var carray = citytimes;
-    for (var i = 0; i < carray.length; i += 6) {
-		if (!carray[i+2] || !carray[i+4]) {
-        	console.log("i " + i + " carray " + carray[i]);
-        }    	
-        var lat = carray[i+1] + parseInt(carray[i+2])/60; // 13 N
-        var longit = carray[i+3] + parseInt(carray[i+4])/60; // 120 W
-        if (carray[i+2].endsWith('S')) lat = -lat;
-        if (carray[i+4].endsWith('W')) longit = -longit;
-        citygeo[carray[i]] = {'lat': lat, 'long': longit };
-    }
-    // start it up
-    gettimes();
 }
 
 module.exports = new SunInterface();

@@ -4,6 +4,7 @@ var http = require("http"),
     ejs = require("ejs"),
     db = require("./data"),
     RedisStore = require('connect-redis')(express),
+    sun = require('./plugins/sunInterface.js'),
     g = require("./globals");
 
 var redis = require('redis').createClient();
@@ -71,7 +72,7 @@ function actiontext(act) {
 
 
 function dodefault(res) {
-    res.render('default.ejs',{ 'PageData' : { 'eventTable': eventmap} });
+    res.render('default.html');
 }    
 
 app.get('/', function(req, res) {
@@ -120,43 +121,45 @@ app.post("/device", function(req,res) {
 
 //get devices
 app.get("/device", function(req,res) {
+    if (req.name) {
+        if (g.devicemap[req.name]) {
+            res.send(200, g.devicemap[req.name]);
+        }
+        else res.send(404);
+    }
+    else res.send(200, g.devicemap);
+});
+
+// update a device
+app.put("/device", function(req,res) {
+    var name = req.name;
+    if (g.devicemap[name]) {
+        g.devicemap = req;
+        res.send(200);
+    }
+    else res.send(404);
+});
+
+app.get("/location",function(req,res) {
+    res.send(200, sun.location);
 });
 
 // add an event
 app.post("/event", function(req,res) {
 });
 
-app.get("/cmd/event"), function (req,res) {
-    var e = eventmap[req.parm.name];
+app.get("/cmd/event", function (req,res) {
+    var e = g.eventmap[req.parm.name];
     runEventActions(e);
     // /cmd/event?name=driveway
     // /cmd/device?name=doorbell&val=on
-}
+});
 
 
 //get events
 //TODO: should return JSON not html
 app.get("/event", function(req,res) {
-
-
-res.send(200, eventmap);
-
-
-/*res.send(200,'<table border="1">' +
-            '<tr><td>run</td><td>edit</td><td>trigger</td><td>Actions</td></tr>' +
-            '<tr>' +
-            '    <td><input type="button" name="run" value="run"/></td>' +
-            '    <td><a href="#">eventname</a></td>' +
-            '    <td><a href="#">on X10 received A12 after 30 minutes</a></td>' +
-            '    <td>' +
-            '        <table><tr><td><a href="#">Actions</a></td></tr>' +
-            '            <tr><td>trigger device front lights</td></tr>' +
-            '            <tr></td>run event "bedtime dingding"</td></tr>' +
-            '        </table>' +
-            '    </td>' +
-            '</tr>' +
-        '</table>');
-*/        
+    res.send(200, g.eventmap);
 });
 
 

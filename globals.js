@@ -5,7 +5,8 @@ var path = require("path"),
 
 var g = {
 
-    ti103init: "192.168.0.143:2000",
+    ti103init: "192.168.0.143:2001",
+//    ti103init: '/dev/ttyUSB0,{ "baudrate": 9600 }',
     acrf2init: "/dev/nul",
 
     MongoHost: "localhost",
@@ -47,6 +48,13 @@ var g = {
 
     }
 };
+
+g.drivermap = {};
+g.devicemap = {};
+g.eventmap = {};
+g.delayedactions = {};
+
+
 
 // these will live in the database at some point
 g.devices = [
@@ -106,15 +114,18 @@ g.devices = [
 	{ name: 'drivewayrx', driver: 'variables', id: 'drivewayrx'},
 	{ name: 'virtual test', driver: 'variables', id: 'virtual test'}
 ];
-
+// min hour day month dayofweek (0-6 Sun-Sat)
 g.events = [
+{ name: "hourly chime" , trigger: "cron", value: "* 9 * * *", actions:[
+    { do: 'speak', value: 'every quarter hour'}
+]},
 { name: "handle switch1", trigger: 'downstairs switch 1', actions: [
 	{ do: 'event', name: 'cascade', delay: "1min"},
-	{ do: 'speak', name: 'switch 1 actions'},
+	{ do: 'speak', value: 'switch 1 actions'},
 	{ do: 'device', name: 'virtual test', value: 'set', parm: 'end switch 1'}
 ]},
 { name: "cascade", actions: [
-	{ do: 'speak', name: 'running cascade now'},
+	{ do: 'speak', value: 'running cascade now'},
 	{ do: 'device', name: 'virtual test', value: 'set', parm: 'end cascade', delay: "2min"}
 ]}
 ];

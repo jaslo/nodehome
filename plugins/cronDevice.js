@@ -14,7 +14,7 @@ var cronjob = require("cron").CronJob;
 
 function cronDevice() {
 	this.subscribe = function(name, val, cb) {
-		new cronjob(val,cb);
+		new cronjob(val,cb,null,true);
 	}
 
     this.driver = {

@@ -3,6 +3,7 @@ function curl() {
     
 
 
+    // val is "get", params is url
     this.cmd = function(id, val, params) {
 
     }

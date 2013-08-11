@@ -15,6 +15,7 @@ function acrf() {
     driverBase.call(this);
 
     this.initialize = function (basedev) {
+/*
         if ((basedev[0] == '/') || basedev.startsWith("COM")) {
             nodeser = new require("serialport").SerialPort(basedev, { baudrate: 19200 });
         }
@@ -24,9 +25,9 @@ function acrf() {
         }
         if (!nodeser) {
         	console.log("failure to initialize device")
-        	return null;	
-        } 
-        
+        	return null;
+        }
+
         nodeser.on("open", function() {
             nodeser.on('data', function(data) {
                 // wait until last byte is '#' ?
@@ -36,6 +37,7 @@ function acrf() {
                 }
             });
         });
+*/
     }
 
     var readser = function() {

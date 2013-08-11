@@ -5,15 +5,27 @@ function driverbase() {
 
 
 	this.subscribe = function(id,val,cb) {
-		if (!val) val = "--";
-		subtbl[id+val] = cb;
-	}	
+        var valtbl;
+        if (!subtbl[id]) {
+            subtbl[id] = {};
+            subtbl[id][val] = [];
+        }
+        subtbl[id][val].push(cb);
+	};
 
 	this.publish = function(id,val) {
-		if (!val) val = "--";
-		var cb = subtbl[id+val];
-		if (cb) cb();
-	}
+        if (!subtbl[id]) {
+            return;
+        }
+		var cb1 = subtbl[id][val];
+		if (cb1) {
+            cb1.forEach( function(e) { e(); });
+        }
+        var cb = subtbl[id][undefined];
+        if (cb) {
+            cb.forEach( function(e) { e(); });
+        }
+	};
 }
 
 module.exports = driverbase;

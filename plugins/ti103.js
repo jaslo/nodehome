@@ -1,8 +1,9 @@
 
-var driverBase = require("./driverBase");
+//var driverBase = require("./driverBase");
 var util = require("util");
 var g = require("../globals");
-var ser2netproxy = require("../ser2netproxy.js");
+//var ser2netproxy = require("../ser2netproxy.js");
+var serialbase = require("./serialDriverBase.js");
 
 function ti103() {
 
@@ -12,9 +13,26 @@ function ti103() {
     var cmdlist = ["ON", "OFF", "DIM", "BGT", "ALN", "AUF", "ALF", "HRQ", "HAK", "PR0", "PR1", "SON", "SOF", "SRQ"];
     var bufferedin = "";
 
-    driverBase.call(this);
+    serialbase.call(this);
 
-    this.initialize = function (basedev) {
+    this.initialize = function (initparm) {
+        var base = initparm;
+        var baseobj = null;
+        var comma = initparm.indexOf(",");
+        if (comma != -1) {
+            base = initparm.substring(0,comma);
+            try {
+                baseobj = JSON.parse(initparm.substring(comma+1));
+            }
+            catch(e) {
+                console.log("failure parsing initialize param:" + initparm.substring(comma+1));
+            }
+        }
+        self.setDevice(base, baseobj, function() {
+            checkStatusLoop();
+        });
+    };
+/*
 	    if ((basedev[0] == '/') || basedev.startsWith("COM")) {
 	    	nodeser = new require("serialport").SerialPort(basedev, { baudrate: 19200 });
 	    }
@@ -24,8 +42,8 @@ function ti103() {
 	    }
         if (!nodeser) {
         	console.log("failure to initialize device")
-        	return null;	
-        } 
+        	return null;
+        }
 
 	    nodeser.on("open", function() {
 	        nodeser.on('data', function(data) {
@@ -52,72 +70,99 @@ function ti103() {
             console.log("serial write results: " + results);
         });
     }
+*/
 
     function isDigit(a) {
         return (a >= '0') && (a <= '9');
     }
 
-    var getresults = function() {
-    	try {
-	    	var str = readser();
+    var inbuffer = "";
+
+    var curhouse = '';
+    var curunit = '';
+    var states = {}; // current value by unit id
+
+    this.onData = function(data) {
+        inbuffer += data;
+        if (inbuffer[inbuffer.length-1] == '#') {
+	    	var str = inbuffer;
 
             // after the ack or nack
             // do a query doquery() for the "echo back"
 
 	    	// strip the header and checksum
 	    	str = str.substring(6);
-	    	if (str[0] == "!") return 0; // accepted
-	    	if (str.startsWith("!S0")) return -1; // buffer full
-	    	if (str[0] == "?") return -2; // bad packet
+	    	if (str.startsWith("!S0")) {
+                return -1; // buffer full
+            }
+	    	if (str[0] == "?") {
+                return -2; // bad packet
+            }
 	    	if (str[0] == '!') { // or 1 ? parse a data acknowledgement
 	    /*
 	    Response: $<2800! P01P01 PONPON P02P02 PBGTPBGTPBGTPBGTPBGTPBGTPBGT
-	    P03P03 POFFPOFF P04P04 PDIMPDIMPDIMPDIMPDIMPDIM46#
+	    P03P03 POFFPOFF P04P04 PDIMPDIMPDIMstatesPDIMPDIMPDIM46#
 	    */
         // parse and publish
-                var skipcheck = str.length - 3;
-                for (j = 1; j < skipcheck; j++) {
-                    var house;
-                    var unit;
-                    var val;
-                    var house1;
-                    var level;
+                var skipcheck = str.length - 3,
+                    val,
+                    house1,
+                    level,
+                    id;
+                for (j = 1; j < skipcheck; ) {
                     // first get unit codes
-                    while (true) {
-                        while (str[j] == ' ') j++;
+                    while (j < skipcheck) {
+                        while (str[j] == ' ') {
+                            j++;
+                        }
                         house1 = str[j++];
                         if (isDigit(str[j])) {
-                            unit = str.substring(j,j+2);
+                            curunit = str.substring(j,j+2);
                             j += 2;
-                            house = house1;
+                            curhouse = house1;
                         }
-                        else break;
+                        else {
+                            break;
+                        }
                     }
-                    // all cmds are 3 chars except 'ON'
-                    if (str.substring(j,j+2) == 'ON') {
-                        val = 'ON';
-                    } else {
-                        val = substring(j,j+3);
-                        if (val == "PR0") {
+                    if (j < skipcheck) {
+                        // all cmds are 3 chars except 'ON'
+                        if (str.substring(j,j+3) == "PR0") {
                             level = house1;
+                            j += 3;
+                            val = "PR0-" + level;
                         }
-                    }
-                    var id = house + unit;
-                    console.log("got x10 " + id + ", value is " + states[id]);
-                    if (!states[id] || states[id] != val) {
-                        states[id] = val;
-                        self.publish(id,val);
+                        else {
+                            curhouse = house1;
+                            if (str.substring(j,j+2) == 'ON') {
+                                val = 'ON';
+                                j += 2;
+                            } else {
+                                val = str.substring(j,j+3);
+                                curhouse = house1;
+                                j += 3;
+                            }
+                        }
+                        curunit = parseInt(curunit,10);
+                        id = curhouse + curunit;
+                        if (curunit != '') {
+                            if (!states[id] || states[id] != val) {
+                                console.log("set x10 " + id + " to " + val);
+                                states[id] = val;
+                                self.publish(id,val);
+                            }
+                            else {
+                                console.log("x10 " + id + " already set to " + val);
+                            }
+                        }
                     }
                 }
-
 	    	}
-	    }
-	    finally {
-	    	expectResults = false;
-	    }
 
-
-    }
+            inbuffer = "";
+            setTimeout(checkStatusLoop,2000)
+	    }
+    };
 
     // $>28001A03A03 AONAON81#
     // $>28001A03A03AONAON61#
@@ -125,10 +170,9 @@ function ti103() {
     // keep sending 'query' until $<2800!4B# is returned?
 
     var checkStatusLoop = function() {
-    	sendser("$>2800008C#");
-    	getresults();
+    	self.sendser("$>2800008C#");
         //setTimeout(checkStatusLoop,5000);
-    }
+    };
 
     /*
 
@@ -184,19 +228,23 @@ K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 
 
 
     var addHash = function(strcmd) {
-    	for (var i = 0; i < strcmd.length; i++) {
+        var i,
+            chks;
+    	for (i = 0; i < strcmd.length; i++) {
     		tot = tot + strcmd[i].charCodeAt();
     	}
-    	var chks = (tot % 256).toString(16);
+    	chks = (tot % 256).toString(16);
         // make sure this is 2 charidacters (1 byte)
-        if (chks.length < 2) chks = "0" + chks;
+        if (chks.length < 2) {
+            chks = "0" + chks;
+        }
     	return strcmd + chks;
-    }
+    };
 
 
     this.get = function(name) {
 
-    }
+    };
 
 // handleinitialize by base class
 //    this.subscribe = function(name, val, cb) {
@@ -231,7 +279,7 @@ K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 
     };
 }
 
-util.inherits(ti103, driverBase);
+util.inherits(ti103, serialbase);
 
 var ti103obj = new ti103();
 

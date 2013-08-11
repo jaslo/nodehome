@@ -14,8 +14,13 @@ var Deferred = require("JQDeferred"),
 	g = require("./globals");
 
 
+var speech = null;
+//speech = require("./speech/flitespeak.js");
+//speech = require("./speech/espeak.js");
+//speech = require("./speech/cepstral.js");
 
-var temptest = require("./plugins/ti103");
+var sun = require("./plugins/sunInterface.js");
+sun.initialize("San Jose, Calif.");
 
 // driver table entry
 // name: drivername
@@ -28,18 +33,15 @@ var temptest = require("./plugins/ti103");
 // obj.set(id, val) (action)
 // obj.subscribe(id, val?, cb) (trigger)
 // obj.get(id) (action??)
-var drivermap = {};
-var devicemap = {};
-var eventmap = {};
 
 function getDeviceInfo(devname) {
 	var driverentry = null;
 	var device = null;
 	if (devname) {
-	    device = devicemap[devname];
+	    device = g.devicemap[devname];
 	    if (device && device.driver) {
 	    	// now lookup driver
-	    	driverentry = drivermap[device.driver];
+	    	driverentry = g.drivermap[device.driver];
 		}
 	}
 	if (!driverentry) {
@@ -56,9 +58,19 @@ function runEventActions(e) {
 		var a = e.actions[i1];
 		if (a.delay) {
 			var ms = delayInMs(a.delay);
-			setTimeout(function() {
-				executeAction(a);
-			}, ms);
+            //TODO: track all the currently "delayed" actions
+            var da = g.delayedactions[a.name];
+            if (da) {
+                console.log("replacing delayed action");
+                clearTimout(da.timeout);
+            }
+			var to = setTimeout((function(a) {
+				return function() { 
+                    delete g.delayedactions[a.name];
+                    executeAction(a); 
+                };
+			})(a), ms);
+            g.delayedactions[a.name] = {act: a, timeout: to};
 		}
 		else executeAction(a);
 	}
@@ -68,7 +80,8 @@ function runEventActions(e) {
 function delayInMs(del) {
 	var n = parseInt(del);
 	var ms = 0;
-	if (del.indexOf(':')) {
+	if (del.indexOf(':') != -1) {
+        // [hh:][mm:][ss][.ms]
 
 	}
 	else if (del.endsWith("sec")) {
@@ -90,7 +103,7 @@ function actionToText(a) {
 			text = "run " + a.name;
 			break;
 		case 'speak':
-			text = "speak " + a.name;
+			text = "speak " + a.value;
 			break;
 	}
 	return text;
@@ -98,18 +111,22 @@ function actionToText(a) {
 
 // delay if present is already handled
 function executeAction(a) {
-	console.log(actionToText(a));
+	console.log("action=>" + actionToText(a));
 	switch (a.do) {
 		case 'device':
 			var devinfo = getDeviceInfo(a.name);
             devinfo.device.latest = new Date();
-            devinfo.driver.publish(devinfo.device, a.value);
-			devinfo.driver.set(devinfo.device, a.value, a.parm);
+            devinfo.driver.obj.publish(devinfo.device, a.value);
+			devinfo.driver.obj.set(devinfo.device, a.value, a.parm);
 			break;
 		case 'event':
-			runEventActions(a.name);
+            //TODO: error if not exists?
+			runEventActions(g.eventmap[a.name]);
 			break;
 		case 'speak':
+            if (speech) {
+                speech.say(a.value);
+            }
 			console.log("speaking: " + a.value);
 			break;
 	}
@@ -118,6 +135,7 @@ function executeAction(a) {
 //
 // load drivers and build "drivers" table
 //
+console.log("loading drivers:");
 var fs = require("fs");
 var pluginfiles = fs.readdirSync("plugins");
 for (var i in pluginfiles) {
@@ -128,7 +146,7 @@ for (var i in pluginfiles) {
     		d1 = require('./plugins/' + p);
     		if (d1.driver) {
     			d1.driver.obj = d1;
-    			drivermap[d1.driver.name] = d1.driver;
+    			g.drivermap[d1.driver.name] = d1.driver;
     			console.log("got driver: " + d1.driver.name);
                 // check for a driver init param
                 var namepart = p.substring(0,p.length-3); // cut off .js
@@ -144,24 +162,36 @@ for (var i in pluginfiles) {
     }
 }
 
-// read devices into devicemap
+// read devices into g.devicemap
 // TODO: switch to database, not g.devices
+//devicemap[name] = name:,location,driver,id,group,latest
+
+console.log("loading devices:");
 for (var i in g.devices) {
 	var d = g.devices[i];
-	devicemap[d.name] = d;
+	g.devicemap[d.name] = d;
 }
 
+console.log("loading events");
+//TODO: add event fields for disabled/logged
 // read events, do all subscribes
+//eventmap[e.name] = {name,trigger,value, actions[]}
+// action = { do, name, value, parm, delay, text}
 for (var i in g.events) {
-	var e = g.events[i];
-	eventmap[e.name] = e;
-	var devname = e.trigger;
-	if (devname && devname != "none") {
-		var devinfo = getDeviceInfo(devname);
-	    devinfo.driver.obj.subscribe(devinfo.device.id,e.value, function() {
-	    	runEventActions(e);
-	    });
-	}
+    var e = g.events[i];
+    for (var ai in e.actions) {
+        e.actions[ai].text = actionToText(e.actions[ai]);
+    }
+    g.eventmap[e.name] = e;
+    var devname = e.trigger;
+    if (devname && devname != "none") {
+        var devinfo = getDeviceInfo(devname);
+        devinfo.driver.obj.subscribe(devinfo.device.id,e.value, (function(e) {
+            return function() {
+                runEventActions(e);
+            }
+        })(e));
+    }
 }
 
 app.listen(82);

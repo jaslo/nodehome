@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <title>NodeHome Main Page</title>
     <link rel="stylesheet" href="themes/base/jquery.ui.all.css">
+    <link rel="stylesheet" href="tables.css">
     <script src="jquery-1.9.1.js"></script>
     <script src="jquery-ui.js"></script>
 <!--    <script src="../../ui/jquery.ui.core.js"></script>
@@ -13,8 +14,8 @@
     <link rel="stylesheet" href="demos.css">
     <script>
 
-    var deviceHtml = "<table><tr><td>run</td><td>edit</td><td>trigger</td>"
-        + "<td>Actions</td></table>";
+    var deviceHtml = '<table id="deviceTable"><tr><td>run</td><td>edit</td><td>trigger</td>'
+        + '<td>Actions</td></table>';
 
 
     function getEventTable(evselector) {
@@ -24,28 +25,91 @@
         })
         .done(function(data, textStatus, jqXHR) {
             // build html from the JSON returned
-            var htmlstr = '<table border="1">' +
-                '<tr><td>run</td><td>edit</td><td>trigger</td><td>Actions</td></tr>';
+            var htmlstr = '<table id="eventTable" border="1">'
+                + '<tr><td>run</td><td>edit</td><td>trigger</td><td>Actions</td>'
+                + '<td>latest</td>'
+                + '</tr>';
             $.each(data, function (id) {
                 var val = data[id];
                 htmlstr += '<tr>' +
                 '<td><input type="button" name="run" value="run"/></td>' +
                 '<td><a href="#">' + val.name + '</a></td>' +
-                '<td><a href="#">' + val.trigger + '</a></td>' +
+                '<td><a>' + val.trigger + '</a></td>' +
                 '<td><table><tr><td><a href="#">Actions</a></td></tr>';
                 $.each(val.actions, function (act) {
-                    htmlstr += '<tr><td>' + val.actions[act] + '</td></tr>';
+                    htmlstr += '<tr><td>' + val.actions[act].text + '</td></tr>';
                 });
-                htmlstr += '</table></td></tr>';
+                htmlstr += '</table></td>';
+                htmlstr += '<td>' + val.latest + '</td>';
+                htmlstr += '</tr>';
             });
             htmlstr += '</table>';
 
-            $(evselector).html(htmlstr);
+            $(evselector).append(htmlstr);
+            $("#eventTable a").click(function(e) {
+                // 'this' is the row object
+                // the child node is the text node
+                var t1 = e.target.childNodes[0].data;
+                console.log(t1);
+                console.log("this or e");
+
+            });
 
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
             alert("failure getting event table");
         });
+    }
+
+    function getSunTimes(evselector) {
+        $.ajax({
+            type: 'GET',
+            url: '/location'
+        })
+        .done(function(data, textStatus, jqXHR) {
+            var htmlstr = "<br/>City: " + data.city + " at (" + data.longitude + "," + 
+                data.latitude + ")" +
+                "<br/>Sunrise: " + new Date(data.rise) + 
+                "<br/>Sunset: " + new Date(data.set);
+            $(evselector).append(htmlstr);
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            alert("failure getting location data");
+        });            
+    }
+
+    function getDeviceTable(evselector) {
+        $.ajax({
+            type: 'GET',
+            url: '/device'
+        })
+        .done(function(data, textStatus, jqXHR) {
+            // build html from the JSON returned
+            var htmlstr = '<table border="1">'
+                + '<tr><td>name</td><td>location</td><td>driver</td><td>id</td>'
+                + '<td>group</td>'
+                + '<td>latest</td>'
+                + '</tr>';
+            $.each(data, function (id) {
+                var val = data[id];
+                htmlstr += '<tr>' +
+                '<td><a href="#">' + val.name + '</a></td>' +
+                '<td><a href="#">' + val.location + '</a></td>' +
+                '<td><a href="#">' + val.driver + '</a></td>' +
+                '<td><a href="#">' + val.id + '</a></td>' +
+                '<td><a href="#">' + val.group + '</a></td>' +
+                '<td>' + (val.latest ? val.latest : 'never')+ '</td>' +
+                '</tr>';
+            });
+            htmlstr += '</table>';
+
+            $(evselector).append(htmlstr);
+
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            alert("failure getting device table");
+        });
+
     }
 
 
@@ -76,6 +140,8 @@
             });
 
         getEventTable("#tabs-2");
+        getDeviceTable("#tabs-1")
+        getSunTimes("#tabs-x");
         //setTimeout(function() {
         //    $("#tabs-2").html(deviceHtml);
         //},5000);
@@ -86,8 +152,8 @@
 
 <div id="maintabs">
     <ul>
-        <li><a href="#tabs-x">Devices</a></li>
-        <li><a href="#tabs-1">Events test</a></li>
+        <li><a href="#tabs-x">Edit</a></li>
+        <li><a href="#tabs-1">Devices</a></li>
         <li><a href="#tabs-2">Events</a></li>
         <li><a href="#tabs-3">Setup</a></li>
     </ul>
@@ -96,20 +162,7 @@
         <a href="#" onclick="editDialog('#eventDialog')">Add Event</a>
     </div>
     <div id="tabs-1">
-        <table border="1">
-            <tr><td>run</td><td>edit</td><td>trigger</td><td>Actions</td></tr>
-            <tr>
-                <td><input type="button" name="run" value="run"/></td>
-                <td><a href="#">eventname</a></td>
-                <td><a href="#">when device kitchen button1 on</a></td>
-                <td>
-                    <table><tr><td><a href="#">Actions</a></td></tr>
-                        <tr><td>run event 'bedtime dingding'</td></tr>
-                        <tr><td>set device front lights on after 30 minutes</td></tr>
-                    </table>
-                </td>
-            </tr>
-        </table>
+        <p>Loading...</p>
     </div>
     <div id="tabs-2">
         <p>Loading...</p>
