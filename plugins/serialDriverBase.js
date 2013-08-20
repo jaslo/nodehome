@@ -31,7 +31,8 @@ function serialDriverBase() {
                 self.onData(data);
             });
             // opened, can now start reading and writing
-            cb();
+            if (cb)
+                cb();
         });
     };
 

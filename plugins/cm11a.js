@@ -77,20 +77,49 @@ function cm11a() {
 //    this.subscribe = function(name, val, cb) {
 //    }
 
-    this.sendcmd = function(cmd, house, dat) {
-        var sendaddr = '';
-        sendaddr += String.fromCharCode(cmd); // address
-        var addr = (tobincodes[house-'A'] << 4) | dat;
-        sendaddr += String.fromCharCode(addr);
-        sendser(sendaddr);
+    this.sendbuf = function (buf, cb) {
+        var checksum = 0;
+        for (var i = 0; i < buf.length; i++) {
+            checksum += buf[i]
+            checksum &= 0x0ff;
+        }
+        var r = this.onData;
+        this.onData = function(data) {
+            if (data[0] == checksum) {
+                var b = new Buffer();
+                b[0] = 0;
+                this.sendser(b);
+            }
+            else if (data[0] == 0x055) {
+                this.onData = r;
+                cb();
+            }
+            else { // resend
+                this.sendser(buf);
+            }
+        }
+        this.sendser(buf);
     }
 
     // dev is "A01" or A1
     this.set = function(id, value, parm) {
         var parsed = g.parsex10id(id);
-        var house = parsed.house;
-        var num = tobincodes[parsed.num-1];
+        var msg = new Buffer();
+        msg[0] = 4;
+        msg[1] = (tobincodes[parsed.house-'A'] << 4) | tobincodes[parsed.num-1];
+
+        this.sendbuf(msg, function() {
+            // now send function
+            var fcode = (value == "on" ? 2 : (value == "off" ? 3 : -1));
+            if (fcode == -1)
+                return -1;
+            msg[0] =
+            this.sendbuf(buf)
+
+        });
+
         var chks = this.sendcmd(4,house,num);
+
         this.waitFor(String.fromCharCode(chks), function() {
             sendser(String.fromCharCode(0));
             this.waitFor(String.fromCharCode(0x55), function() {

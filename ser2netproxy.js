@@ -12,16 +12,31 @@ function ser2netproxy(netaddr) {
 
 
     this.open = function(cb) {
-        client = net.connect(netaddr, function() {
-            this.setEncoding('ascii'); // read data will now return ascii strings, not buffer objects
-        });
-        client.on('data', function(data) {
-            self.emit('data',data);
-        });
+        try {
+            client = net.connect(netaddr, function() {
+                this.setEncoding('ascii'); // read data will now return ascii strings, not buffer objects
+            });
+            client.on('data', function(data) {
+                self.emit('data',data);
+            });
+            client.on('error', function() {
+                client = null;
+            });
+            client.on('close', function() {
+                client = null;
+            });
+        }
+        catch(e) {
+            client = null;
+        }
         cb();
     };
 
 	this.write = function (data, cb) {
+        if (!client) {
+            cb();
+            return;
+        }
 		client.write(data, "ascii", function() {
 			if (cb) {
                 cb();

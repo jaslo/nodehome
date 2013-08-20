@@ -7,7 +7,8 @@ var g = {
 
     ti103init: "192.168.0.143:2001",
 //    ti103init: '/dev/ttyUSB0,{ "baudrate": 9600 }',
-    acrf2init: "/dev/nul",
+//    acrf2init: "/dev/nul",
+    acrfinit: '/dev/ttyUSB0,{ "baudrate": 4800 }',
 
     MongoHost: "localhost",
     htmlBase: path.join(__dirname,"/html"),
@@ -60,6 +61,20 @@ g.delayedactions = {};
 g.devices = [
 	{ name: 'cron', driver: 'cron' }, // system device
 	{ name: 'sun', driver: 'sun' }, // system device
+    { name: 'curl', driver: 'curl'}, // system device
+
+    { name: 'rfcontroller 1', location: "kitchen", driver: "acrf", id: "H1"},
+    { name: 'rfcontroller 5', location: "kitchen", driver: "acrf", id: "H5"},
+    { name: 'rfcontroller 6', location: "kitchen", driver: "acrf", id: "H6"},
+    { name: 'rfcontroller 7', location: "kitchen", driver: "acrf", id: "H7"},
+    { name: 'rfcontroller 8', location: "kitchen", driver: "acrf", id: "H8"},
+
+    // rf motion sensors (hawkeye)
+    {name: "hawkeye A3", location: "downstairs", driver: "acrf", id: "A3" },
+    {name: "hawkeye A4", location: "porch", driver: "acrf", id: "A4" },
+    {name: "hawkeye A6", location: "stairwell", driver: "acrf", id: "A6" },
+    {name: "hawkeye A14", location: "kitchen", driver: "acrf", id: "A14" },
+    {name: "lightsensor A15", location: "kitchen", driver: "acrf", id: "A15" },
 
 	{name: "downstairs switch 1", location: "downstairs", driver:'ti103',id:'F1'},
 	{name: "downstairs switch 2", location: "downstairs", driver:'ti103',id:'F2'},
@@ -116,7 +131,85 @@ g.devices = [
 ];
 // min hour day month dayofweek (0-6 Sun-Sat)
 g.events = [
-{ name: "hourly chime" , trigger: "cron", value: "* 9 * * *", actions:[
+
+// rf events from homeseer, trigger remotely to homeseer
+{ name: "remote h1", trigger: 'rfcontroller 1', value:"off", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.TriggerEvent("Arm from Keypad")&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "remote h5", trigger: 'rfcontroller 5', value:"off", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.TriggerEvent("all xmas lights off")&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "remote h6", trigger: 'rfcontroller 6', value:"off", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.TriggerEvent("kitchen controller off")&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "remote h7", trigger: 'rfcontroller 7', value:"off", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.TriggerEvent("bed time")&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "remote h8", trigger: 'rfcontroller 8', value:"off", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.TriggerEvent("upstairs2")&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "remote h5", trigger: 'rfcontroller 5', value:"on", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.TriggerEvent("kitchen controller h5")&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "remote h6", trigger: 'rfcontroller 6', value:"on", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.TriggerEvent("kitchen light")&runscript=Execute+Command&ref_page=ctrl'}
+]},
+
+{ name: "hawkeye a3", trigger: "hawkeye A3", value: "on", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A3",2)&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "hawkeye a3", trigger: "hawkeye A3", value: "off", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A3",3)&runscript=Execute+Command&ref_page=ctrl'}
+]},
+
+{ name: "hawkeye a4", trigger: "hawkeye A4", value: "on", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A4",2)&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "hawkeye a4", trigger: "hawkeye A4", value: "off", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A4",3)&runscript=Execute+Command&ref_page=ctrl'}
+]},
+
+{ name: "hawkeye a6", trigger: "hawkeye A6", value: "on", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A6",2)&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "hawkeye a6", trigger: "hawkeye A3", value: "off", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A6",3)&runscript=Execute+Command&ref_page=ctrl'}
+]},
+
+{ name: "hawkeye a14", trigger: "hawkeye A14", value: "on", actions: [
+    { do: 'speak', value: 'motion now'},
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A14",2)&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "hawkeye a14", trigger: "hawkeye A14", value: "off", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A14",3)&runscript=Execute+Command&ref_page=ctrl'}
+]},
+
+{ name: "hawkeye a15", trigger: "lightsensor A15", value: "on", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A15",2)&runscript=Execute+Command&ref_page=ctrl'}
+]},
+{ name: "hawkeye a15", trigger: "lightsensor A15", value: "off", actions: [
+    { do: "device", name: "curl", value: "POST",
+        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A15",3)&runscript=Execute+Command&ref_page=ctrl'}
+]},
+
+// test actions
+{ name: "hourly chime" , trigger: "cron", value: "0/30 * * * *", actions:[
     { do: 'speak', value: 'every quarter hour'}
 ]},
 { name: "handle switch1", trigger: 'downstairs switch 1', actions: [

@@ -8,6 +8,8 @@ function driverbase() {
         var valtbl;
         if (!subtbl[id]) {
             subtbl[id] = {};
+        }
+        if (!subtbl[id][val]) {
             subtbl[id][val] = [];
         }
         subtbl[id][val].push(cb);

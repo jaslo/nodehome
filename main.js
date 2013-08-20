@@ -15,8 +15,12 @@ var Deferred = require("JQDeferred"),
 
 
 var speech = null;
+// flitespeak is nice for ubuntu, but it's loud!
 //speech = require("./speech/flitespeak.js");
+
 //speech = require("./speech/espeak.js");
+
+// no cepstral except on rpi
 //speech = require("./speech/cepstral.js");
 
 var sun = require("./plugins/sunInterface.js");
@@ -43,9 +47,12 @@ function getDeviceInfo(devname) {
 	    	// now lookup driver
 	    	driverentry = g.drivermap[device.driver];
 		}
+        if (!device) {
+            console.log("no device: " + devname);
+        }
 	}
 	if (!driverentry) {
-		console.log("driver for " + devname + " not found");
+		console.log("driver for " + devname + " not found: ");
 	}
 
    	return {driver: driverentry, device: device};
@@ -186,6 +193,9 @@ for (var i in g.events) {
     var devname = e.trigger;
     if (devname && devname != "none") {
         var devinfo = getDeviceInfo(devname);
+        if (!devinfo) {
+            console.log("Error on event " + e.name + ". No device " + devname + ".");
+        }
         devinfo.driver.obj.subscribe(devinfo.device.id,e.value, (function(e) {
             return function() {
                 runEventActions(e);

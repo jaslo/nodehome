@@ -3,10 +3,17 @@
 <head>
     <meta charset="utf-8">
     <title>NodeHome Main Page</title>
+    <link rel="stylesheet" href="../css/theme.jui.css">
+    <link rel="stylesheet" href="themes/base/jquery-ui.css">
     <link rel="stylesheet" href="themes/base/jquery.ui.all.css">
     <link rel="stylesheet" href="tables.css">
     <script src="jquery-1.9.1.js"></script>
     <script src="jquery-ui.js"></script>
+    <script src="js/jquery.metadata.js"></script>
+    <script src="js/jquery.tablesorter.js"></script>
+    <script src="js/jquery.tablesorter.widgets.js"></script>
+    <script src="tablesort.js"></script>
+    <script src="date.format.js"></script>
 <!--    <script src="../../ui/jquery.ui.core.js"></script>
     <script src="../../ui/jquery.ui.widget.js"></script>
     <script src="../../ui/jquery.ui.tabs.js"></script>
@@ -14,9 +21,16 @@
     <link rel="stylesheet" href="demos.css">
     <script>
 
-    var deviceHtml = '<table id="deviceTable"><tr><td>run</td><td>edit</td><td>trigger</td>'
-        + '<td>Actions</td></table>';
+    function findTableRow(tablesel, element) {
+        var td = $(element).parents("td");
+        if (!td) td = element;
+        var tr = $(element).parents("tr");
+        return {
+            row: $(tr[tr.length-1]),
+            index: $(tr[tr.length-1]).children().index(td)
+        };
 
+    }
 
     function getEventTable(evselector) {
         $.ajax({
@@ -25,10 +39,10 @@
         })
         .done(function(data, textStatus, jqXHR) {
             // build html from the JSON returned
-            var htmlstr = '<table id="eventTable" border="1">'
-                + '<tr><td>run</td><td>edit</td><td>trigger</td><td>Actions</td>'
-                + '<td>latest</td>'
-                + '</tr>';
+            var htmlstr = '<table id="eventTable" class="tablesorter" cellspacing="1">'
+                + '<thead><tr><th>run</th><th>edit</th><th>trigger</th><th>Actions</th>'
+                + '<th>latest</th>'
+                + '</tr></thead><tbody>';
             $.each(data, function (id) {
                 var val = data[id];
                 htmlstr += '<tr>' +
@@ -43,15 +57,34 @@
                 htmlstr += '<td>' + val.latest + '</td>';
                 htmlstr += '</tr>';
             });
-            htmlstr += '</table>';
+            htmlstr += '</tbody></table>';
 
             $(evselector).append(htmlstr);
-            $("#eventTable a").click(function(e) {
+            setTableSort("#eventTable");
+
+            //$('#eventTable').tablesorter();
+
+            $("#eventTable td").click(function(e) {
                 // 'this' is the row object
                 // the child node is the text node
-                var t1 = e.target.childNodes[0].data;
-                console.log(t1);
-                console.log("this or e");
+                e.stopPropagation();
+                var tr = findTableRow("#eventTable",e.target);
+                var n = tr.index;
+                // column 0 is the "run" button
+                var rowName = $(tr.row.children()[1]).text();
+                console.log("clicked column " + n + "=" + rowName);
+                if (n != -1) {
+                    switch (n) {
+                        case 0: console.log("run"); break;
+                        case 1: console.log("edit"); break;
+                        case 2: console.log("trigger"); break;
+                        case 3: console.log("actions"); break;
+                    }
+                }
+
+                //var t1 = e.target.childNodes[0].data;
+                //console.log(t1);
+                //console.log("this or e");
 
             });
 
@@ -67,15 +100,17 @@
             url: '/location'
         })
         .done(function(data, textStatus, jqXHR) {
-            var htmlstr = "<br/>City: " + data.city + " at (" + data.longitude + "," + 
-                data.latitude + ")" +
-                "<br/>Sunrise: " + new Date(data.rise) + 
-                "<br/>Sunset: " + new Date(data.set);
+            var htmlstr = "<div style='display:inline-block;'>For Today:" + new Date().format("default") + "</div>" +
+                "<div style='display:inline-block;margin-left:30px;'>City: " + data.city + " at (" +
+                data.longitude.toFixed(2).toString() + "," +
+                data.latitude.toFixed(2).toString() + ")</div>" +
+                "<div style='display:inline-block;margin-left:30px;'>Next Sunrise: " + new Date(data.rise).format("default") + "</div>" +
+                "<div style='display:inline-block;margin-left:30px;'>Next Sunset: " + new Date(data.set).format("default") + "</div>";
             $(evselector).append(htmlstr);
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
             alert("failure getting location data");
-        });            
+        });
     }
 
     function getDeviceTable(evselector) {
@@ -85,11 +120,11 @@
         })
         .done(function(data, textStatus, jqXHR) {
             // build html from the JSON returned
-            var htmlstr = '<table border="1">'
-                + '<tr><td>name</td><td>location</td><td>driver</td><td>id</td>'
-                + '<td>group</td>'
-                + '<td>latest</td>'
-                + '</tr>';
+            var htmlstr = '<table id="deviceTable" class="tablesorter" cellspacing="1">'
+                + '<thead><tr><th>name</th><th>location</th><th>driver</th><th>id</th>'
+                + '<th>group</th>'
+                + '<th>latest</th>'
+                + '</tr></thead><tbody>';
             $.each(data, function (id) {
                 var val = data[id];
                 htmlstr += '<tr>' +
@@ -101,10 +136,21 @@
                 '<td>' + (val.latest ? val.latest : 'never')+ '</td>' +
                 '</tr>';
             });
-            htmlstr += '</table>';
+            htmlstr += '</tbody></table>';
 
             $(evselector).append(htmlstr);
+            setTableSort("#deviceTable");
 
+            //$('#deviceTable').tablesorter();
+            $("#deviceTable td").click(function(e) {
+                // 'this' is the row object
+                // the child node is the text node
+                e.stopPropagation();
+                var tr = findTableRow("#deviceTable",e.target);
+                var n = tr.index;
+                var rowName = $(tr.row.children()[0]).text();
+                console.log("clicked column " + n + "=" + rowName);
+            });
         })
         .fail(function(jqXHR, textStatus, errorThrown) {
             alert("failure getting device table");
@@ -114,13 +160,13 @@
 
 
     function editDialog(selector) {
-        $(selector).dialog({modal: true, buttons: [ 
+        $(selector).dialog({modal: true, buttons: [
             { text: "Ok", click: function() {
-                $( this ).dialog( "close" ); 
+                $( this ).dialog( "close" );
             }},
             { text: "Cancel", click: function() {
-                $( this ).dialog( "close" ); 
-            }} 
+                $( this ).dialog( "close" );
+            }}
             ]
         });
         $(selector).css('visibility','visible');
@@ -141,20 +187,20 @@
 
         getEventTable("#tabs-2");
         getDeviceTable("#tabs-1")
-        getSunTimes("#tabs-x");
-        //setTimeout(function() {
-        //    $("#tabs-2").html(deviceHtml);
-        //},5000);
+        getSunTimes("#welcome");
     });
     </script>
 </head>
 <body>
-
+<div id="welcome" style="font-size:14px">
+<div style="font-size:20px">Welcome to NodeHouse!</div>
+<br/>
+</div>
 <div id="maintabs">
     <ul>
-        <li><a href="#tabs-x">Edit</a></li>
         <li><a href="#tabs-1">Devices</a></li>
         <li><a href="#tabs-2">Events</a></li>
+        <li><a href="#tabs-x">Edit</a></li>
         <li><a href="#tabs-3">Setup</a></li>
     </ul>
     <div id="tabs-x">
@@ -162,10 +208,8 @@
         <a href="#" onclick="editDialog('#eventDialog')">Add Event</a>
     </div>
     <div id="tabs-1">
-        <p>Loading...</p>
     </div>
     <div id="tabs-2">
-        <p>Loading...</p>
     </div>
     <div id="tabs-3">
         <p>Mauris eleifend est et turpis. Duis id erat. Suspendisse potenti. Aliquam vulputate, pede vel vehicula accumsan, mi neque rutrum erat, eu congue orci lorem eget lorem. Vestibulum non ante. Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos. Fusce sodales. Quisque eu urna vel enim commodo pellentesque. Praesent eu risus hendrerit ligula tempus pretium. Curabitur lorem enim, pretium nec, feugiat nec, luctus a, lacus.</p>
