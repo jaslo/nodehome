@@ -1,12 +1,16 @@
+var driverBase = require("./driverBase");
+var http = require("http"),
+util = require("util"),
+url = require("url");
+
+function rcsx10b() {
 
 
-function rcx10b() {
-	
+    this.set
 	this.driver = {
-		name: 'rcsx10b', 
-		idtype: 'thermostat', 
-		uses:'ti103',
-		id:'H',
+		name: 'rcsx10b',
+		idtype: 'thermostat',
+		id:'M',
     	cmds:['setheat', 'setcool'],
     	events:['temp']
 	};

@@ -27,21 +27,22 @@ function acrf() {
                 baseobj = JSON.parse(initparm.substring(comma+1));
             }
             catch(e) {
-                console.log("failure parsing initialize param:" + initparm.substring(comma+1));
+                g.log(g.LOG_TRACE,"failure parsing initialize param:" + initparm.substring(comma+1));
             }
         }
         self.setDevice(base, baseobj);
     };
 
-    var states = {}; // current value by unit id
+//    var states = {}; // current value by unit id
 
     this.onData = function(data) {
+        var states = {}; // current value by unit id
 
         var str = data.length + " => ";
         for (var i = 0; i < data.length; i++) {
             str += data[i].toString(16);
         }
-        console.log(str);
+        g.log(g.LOG_VERBOSE,str);
 
 
         var house = reversehousecodes[(data[0] >> 4) & 0x0f];
@@ -54,19 +55,17 @@ function acrf() {
         var val = (data[2] & 0x20) ? "off" : "on";
 
         var id = house + unit;
-        if (!states[id] || states[id] != val) {
-            console.log("set x10 " + id + " to " + val);
-            states[id] = val;
+        if (self.canTrigger(id,val)) {
             self.publish(id,val);
         }
         else {
-            console.log("x10 " + id + " already set to " + val);
+            g.log(g.LOG_VERBOSE,"x10 " + id + " already set to " + val);
         }
 
     }
 
     // dev is "A01" or A1
-    this.cmd = function(id, cmd, val) {
+    this.cmd = function(id, value, parm) {
         var parsed = g.parsex10id(id);
         var house = parsed.house;
         var num = parsed.num;
@@ -74,7 +73,7 @@ function acrf() {
         num = num - 1;
         var extrabit = num & 8;
         var unitbits = (num & 3) << 3 | (num & 4) >> 2;
-        if (cmd == 'off')
+        if (value == 'off')
             unitbits |= 4;
         var housecode = housebits[house.charCodeAt(0) - 'A'] | extrabit;
     };

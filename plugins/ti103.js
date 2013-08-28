@@ -25,7 +25,7 @@ function ti103() {
                 baseobj = JSON.parse(initparm.substring(comma+1));
             }
             catch(e) {
-                console.log("failure parsing initialize param:" + initparm.substring(comma+1));
+                g.log(g.LOG_TRACE,"failure parsing initialize param:" + initparm.substring(comma+1));
             }
         }
         self.setDevice(base, baseobj, function() {
@@ -41,7 +41,7 @@ function ti103() {
 	    	nodeser = new ser2netproxy({host: basedev.substring(0,ncolon), port:basedev.substring(ncolon+1)});
 	    }
         if (!nodeser) {
-        	console.log("failure to initialize device")
+        	g.log(g.LOG_TRACE,"failure to initialize device")
         	return null;
         }
 
@@ -50,7 +50,7 @@ function ti103() {
                 // wait until last byte is '#' ?
 	            bufferedin += data;
 	            if (!expectResults) {
-	            	console.log("unsolicited data: " + data);
+	            	g.log(g.LOG_TRACE,"unsolicited data: " + data);
 	            }
 	        });
 			// opened, can now start reading and writing
@@ -67,7 +67,7 @@ function ti103() {
     var sendser = function(data) {
         nodeser.write(data, function(err, results) {
         	expectResults = true;
-            console.log("serial write results: " + results);
+            g.log(g.LOG_TRACE,"serial write results: " + results);
         });
     }
 */
@@ -80,11 +80,12 @@ function ti103() {
 
     var curhouse = '';
     var curunit = '';
-    var states = {}; // current value by unit id
+//    var states = {}; // current value by unit id
 
     this.onData = function(data) {
         inbuffer += data;
         if (inbuffer[inbuffer.length-1] == '#') {
+            var states = {}; // current value by unit id
 	    	var str = inbuffer;
 
             // after the ack or nack
@@ -146,13 +147,11 @@ function ti103() {
                         curunit = parseInt(curunit,10);
                         id = curhouse + curunit;
                         if (curunit != '') {
-                            if (!states[id] || states[id] != val) {
-                                console.log("set x10 " + id + " to " + val);
-                                states[id] = val;
+                            if (self.canTrigger(id,val)) {
                                 self.publish(id,val);
                             }
                             else {
-                                console.log("x10 " + id + " already set to " + val);
+                                g.log(g.LOG_VERBOSE,"x10 " + id + " already set to " + val);
                             }
                         }
                     }

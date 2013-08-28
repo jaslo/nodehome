@@ -12,13 +12,18 @@ function curl() {
     // val is "get", params is url
     this.set = function(id, val, params) {
         // for a post, the url with be split from the data by a space
-        var space = params.indexOf(' ');
         var urlstr, datastr;
-        if (space > 0) {
-            urlstr = params.substring(0,space);
-            datastr = params.substring(space+1);
-        }
-        else urlstr = params;
+        if (typeof(params) == "string") {
+	        var space = params.indexOf(' ');
+	        if (space > 0) {
+	            urlstr = params.substring(0,space);
+	            datastr = params.substring(space+1);
+	        }
+	        else urlstr = params;
+	    } else {
+	    	urlstr = params.url;
+	    	datastr = params.data;
+	    }
         var parsed = url.parse(urlstr);
         var headers = {};
         headers["Accept"] = "*/*";

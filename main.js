@@ -11,6 +11,7 @@ var Deferred = require("JQDeferred"),
 	http = require("http"),
 	app = require("./app"),
 	xpath = require("xpath"),
+	db = require("./dbdata"),
 	g = require("./globals");
 
 
@@ -48,14 +49,29 @@ function getDeviceInfo(devname) {
 	    	driverentry = g.drivermap[device.driver];
 		}
         if (!device) {
-            console.log("no device: " + devname);
+            g.log(g.LOG_ERROR,"no device: " + devname);
         }
 	}
 	if (!driverentry) {
-		console.log("driver for " + devname + " not found: ");
+		g.log(g.LOG_ERROR,"driver for " + devname + " not found: ");
 	}
 
-   	return {driver: driverentry, device: device};
+   	return {driver: driverentry, 'device': device};
+}
+
+function checkEventActions(e) {
+	for (var i1 = 0; i1 < e.actions.length; i1++) {
+		var a = e.actions[i1];
+		if (a.delay) {
+			var ms = delayInMs(a.delay);
+			if (ms == 0) {
+				g.log(g.LOG_WARNING, "Event " + e.name + ", action " + i1 + " invalid delay");
+			}
+		}
+		if (a.do == 'device') {
+			getDeviceInfo(a.name);
+		}
+	}
 }
 
 function runEventActions(e) {
@@ -68,7 +84,7 @@ function runEventActions(e) {
             //TODO: track all the currently "delayed" actions
             var da = g.delayedactions[a.name];
             if (da) {
-                console.log("replacing delayed action");
+                g.log(g.LOG_TRACE,"replacing delayed action");
                 clearTimout(da.timeout);
             }
 			var to = setTimeout((function(a) {
@@ -118,12 +134,15 @@ function actionToText(a) {
 
 // delay if present is already handled
 function executeAction(a) {
-	console.log("action=>" + actionToText(a));
+	g.log(g.LOG_TRACE,"action=>" + actionToText(a));
 	switch (a.do) {
 		case 'device':
 			var devinfo = getDeviceInfo(a.name);
             devinfo.device.latest = new Date();
-            devinfo.driver.obj.publish(devinfo.device, a.value);
+            if (typeof(devinfo.device.id) != "string") {
+                g.log(g.LOG_ERROR, "bad device for " + a.name);
+            }
+            devinfo.driver.obj.publish(devinfo.device.id, a.value);
 			devinfo.driver.obj.set(devinfo.device, a.value, a.parm);
 			break;
 		case 'event':
@@ -134,7 +153,7 @@ function executeAction(a) {
             if (speech) {
                 speech.say(a.value);
             }
-			console.log("speaking: " + a.value);
+			g.log(g.LOG_TRACE,"speaking: " + a.value);
 			break;
 	}
 }
@@ -142,7 +161,7 @@ function executeAction(a) {
 //
 // load drivers and build "drivers" table
 //
-console.log("loading drivers:");
+g.log(g.LOG_TRACE,"loading drivers:");
 var fs = require("fs");
 var pluginfiles = fs.readdirSync("plugins");
 for (var i in pluginfiles) {
@@ -154,7 +173,7 @@ for (var i in pluginfiles) {
     		if (d1.driver) {
     			d1.driver.obj = d1;
     			g.drivermap[d1.driver.name] = d1.driver;
-    			console.log("got driver: " + d1.driver.name);
+    			g.log(g.LOG_TRACE,"got driver: " + d1.driver.name);
                 // check for a driver init param
                 var namepart = p.substring(0,p.length-3); // cut off .js
                 if (g[namepart + "init"] && d1.initialize) {
@@ -164,7 +183,7 @@ for (var i in pluginfiles) {
     		}
     	}
     	catch (ex) {
-    		console.log("exception " + ex);
+    		g.log(g.LOG_TRACE,"exception " + ex);
     	}
     }
 }
@@ -173,19 +192,17 @@ for (var i in pluginfiles) {
 // TODO: switch to database, not g.devices
 //devicemap[name] = name:,location,driver,id,group,latest
 
-console.log("loading devices:");
-for (var i in g.devices) {
-	var d = g.devices[i];
-	g.devicemap[d.name] = d;
-}
+g.log(g.LOG_TRACE,"loading devices:");
+db.loadDevices();
 
-console.log("loading events");
+g.log(g.LOG_TRACE,"loading events");
 //TODO: add event fields for disabled/logged
 // read events, do all subscribes
 //eventmap[e.name] = {name,trigger,value, actions[]}
 // action = { do, name, value, parm, delay, text}
-for (var i in g.events) {
-    var e = g.events[i];
+for (var i in db.events) {
+    var e = db.events[i];
+    checkEventActions(e);
     for (var ai in e.actions) {
         e.actions[ai].text = actionToText(e.actions[ai]);
     }
@@ -194,7 +211,7 @@ for (var i in g.events) {
     if (devname && devname != "none") {
         var devinfo = getDeviceInfo(devname);
         if (!devinfo) {
-            console.log("Error on event " + e.name + ". No device " + devname + ".");
+            g.log(g.LOG_TRACE,"Error on event " + e.name + ". No device " + devname + ".");
         }
         devinfo.driver.obj.subscribe(devinfo.device.id,e.value, (function(e) {
             return function() {

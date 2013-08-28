@@ -20,6 +20,7 @@
      "connect-redis":"~1.4.5",
      "cron":"~1.0.1",
      "time":"~0.9.2",
+     "dateformat":"~1.0.6",
      "node-inspector":"~0.3.1"
   },
   "engine": {
