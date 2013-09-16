@@ -20,6 +20,7 @@ function driverbase() {
             g.log(g.LOG_TRACE,"retrigger x10 " + id + " to " + val);
             return true;
         }
+        g.log(g.LOG_VERBOSE,"x10 " + id + " already set to " + val);
         return false;
     }
 

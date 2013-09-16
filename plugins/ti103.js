@@ -1,4 +1,3 @@
-
 //var driverBase = require("./driverBase");
 var util = require("util");
 var g = require("../globals");
@@ -12,6 +11,7 @@ function ti103() {
     var nodeser;
     var cmdlist = ["ON", "OFF", "DIM", "BGT", "ALN", "AUF", "ALF", "HRQ", "HAK", "PR0", "PR1", "SON", "SOF", "SRQ"];
     var bufferedin = "";
+    var lastcheck;
 
     serialbase.call(this);
 
@@ -32,45 +32,6 @@ function ti103() {
             checkStatusLoop();
         });
     };
-/*
-	    if ((basedev[0] == '/') || basedev.startsWith("COM")) {
-	    	nodeser = new require("serialport").SerialPort(basedev, { baudrate: 19200 });
-	    }
-	    else if (basedev[0].match(/^[0-9]/)) {
-	    	var ncolon = basedev.indexOf(':');
-	    	nodeser = new ser2netproxy({host: basedev.substring(0,ncolon), port:basedev.substring(ncolon+1)});
-	    }
-        if (!nodeser) {
-        	g.log(g.LOG_TRACE,"failure to initialize device")
-        	return null;
-        }
-
-	    nodeser.on("open", function() {
-	        nodeser.on('data', function(data) {
-                // wait until last byte is '#' ?
-	            bufferedin += data;
-	            if (!expectResults) {
-	            	g.log(g.LOG_TRACE,"unsolicited data: " + data);
-	            }
-	        });
-			// opened, can now start reading and writing
-	        checkStatusLoop();
-	    });
-	}
-
-    var readser = function() {
-        var s = bufferedin;
-        bufferedin = "";
-        return s;
-    }
-
-    var sendser = function(data) {
-        nodeser.write(data, function(err, results) {
-        	expectResults = true;
-            g.log(g.LOG_TRACE,"serial write results: " + results);
-        });
-    }
-*/
 
     function isDigit(a) {
         return (a >= '0') && (a <= '9');
@@ -82,85 +43,98 @@ function ti103() {
     var curunit = '';
 //    var states = {}; // current value by unit id
 
+    function decodeStr(str) {
+        g.log(g.LOG_DIAGNOSTIC,str);
+        var skipcheck = str.length - 3,
+            val,
+            house1,
+            level,
+            id;
+        for (j = 1; j < skipcheck; ) {
+            // first get unit codes
+            while (j < skipcheck) {
+                while (str[j] == ' ') {
+                    j++;
+                }
+                house1 = str[j++];
+                if (isDigit(str[j])) {
+                    curunit = str.substring(j,j+2);
+                    j += 2;
+                    curhouse = house1;
+                }
+                else {
+                    break;
+                }
+            }
+            if (j < skipcheck) {
+                // all cmds are 3 chars except 'ON'
+                if (str.substring(j,j+2) == "PR") {
+                    var pset = str.substring(j+2,j+3);
+                    level = house1;
+                    j += 3;
+                    val = "PR" + pset + "-" + level;
+                }
+                else {
+                    curhouse = house1;
+                    if (str.substring(j,j+2) == 'ON') {
+                        val = 'ON';
+                        j += 2;
+                    } else {
+                        val = str.substring(j,j+3);
+                        curhouse = house1;
+                        j += 3;
+                    }
+                }
+                curunit = parseInt(curunit,10);
+                id = curhouse + curunit;
+                if (curunit != '') {
+                    if (self.canTrigger(id,val)) {
+                        self.publish(id,val);
+                    }
+                }
+            }
+        }
+    }
+
     this.onData = function(data) {
         inbuffer += data;
         if (inbuffer[inbuffer.length-1] == '#') {
-            var states = {}; // current value by unit id
-	    	var str = inbuffer;
+            var strs = inbuffer.split("$");
+            for (var sx = 0; sx < strs.length; sx++) {
+	    	  var str = strs[sx];
 
-            // after the ack or nack
-            // do a query doquery() for the "echo back"
+                // after the ack or nack
+                // do a query doquery() for the "echo back"
 
-	    	// strip the header and checksum
-	    	str = str.substring(6);
-	    	if (str.startsWith("!S0")) {
-                return -1; // buffer full
-            }
-	    	if (str[0] == "?") {
-                return -2; // bad packet
-            }
-	    	if (str[0] == '!') { // or 1 ? parse a data acknowledgement
-	    /*
-	    Response: $<2800! P01P01 PONPON P02P02 PBGTPBGTPBGTPBGTPBGTPBGTPBGT
-	    P03P03 POFFPOFF P04P04 PDIMPDIMPDIMstatesPDIMPDIMPDIM46#
-	    */
-        // parse and publish
-                var skipcheck = str.length - 3,
-                    val,
-                    house1,
-                    level,
-                    id;
-                for (j = 1; j < skipcheck; ) {
-                    // first get unit codes
-                    while (j < skipcheck) {
-                        while (str[j] == ' ') {
-                            j++;
-                        }
-                        house1 = str[j++];
-                        if (isDigit(str[j])) {
-                            curunit = str.substring(j,j+2);
-                            j += 2;
-                            curhouse = house1;
-                        }
-                        else {
-                            break;
-                        }
-                    }
-                    if (j < skipcheck) {
-                        // all cmds are 3 chars except 'ON'
-                        if (str.substring(j,j+3) == "PR0") {
-                            level = house1;
-                            j += 3;
-                            val = "PR0-" + level;
-                        }
-                        else {
-                            curhouse = house1;
-                            if (str.substring(j,j+2) == 'ON') {
-                                val = 'ON';
-                                j += 2;
-                            } else {
-                                val = str.substring(j,j+3);
-                                curhouse = house1;
-                                j += 3;
-                            }
-                        }
-                        curunit = parseInt(curunit,10);
-                        id = curhouse + curunit;
-                        if (curunit != '') {
-                            if (self.canTrigger(id,val)) {
-                                self.publish(id,val);
-                            }
-                            else {
-                                g.log(g.LOG_VERBOSE,"x10 " + id + " already set to " + val);
-                            }
-                        }
-                    }
+    	    	// strip the header and checksum
+    	    	str = str.substring(5);
+    	    	if (str.startsWith("!S0")) {
+                    g.log(g.LOG_ERROR,"ti103 buffer full");
+                    continue; // buffer full
                 }
-	    	}
-
+    	    	if (str[0] == "?") {
+                    g.log(g.LOG_ERROR,"ti103 packet rejected");
+                    continue;
+                }
+    	    	if (str[0] == '!') { // or 1 ? parse a data acknowledgement
+    	    /*
+    	    Response: $<2800! P01P01 PONPON P02P02 PBGTPBGTPBGTPBGTPBGTPBGTPBGT
+    	    P03P03 POFFPOFF P04P04 PDIMPDIMPDIMstatesPDIMPDIMPDIM46#
+    	    */
+            // parse and publish
+            //  K06K06 FPR0FPR0 K15K15 DPR0DPR0EB#
+            //  house K
+            // unit 6, pr0-F (level 9) report status temp change
+            // unit 15, pr0-D (level 5) 72 degrees
+                    if (str.length > 4) {
+                        if (str[str.length-1] != "#") str += "#"
+                        decodeStr(str);
+        	    	}
+                }
+            }
             inbuffer = "";
-            setTimeout(checkStatusLoop,2000)
 	    }
+        setTimeout(checkStatusLoop,2000)
     };
 
     // $>28001A03A03 AONAON81#
@@ -223,21 +197,31 @@ K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 
 
     request temp = K5 MPR0
 
+
+! K06K06 FPR0FPR0 K15K15 PPR0E1#
+23:30:54.851 set x10 K6 to PR0-F
+23:30:54.852 got thermostat message
+23:30:54.853 reporting setpoint
+23:30:54.853 set x10 K15 to PR0-P
+23:30:54.853 got thermostat message
+23:30:54.853 temp: 71
+
+
+
     */
 
 
     var addHash = function(strcmd) {
         var i,
             chks;
+        var tot = 0;
     	for (i = 0; i < strcmd.length; i++) {
-    		tot = tot + strcmd[i].charCodeAt();
+    		tot = tot + strcmd.charCodeAt(i);
     	}
-    	chks = (tot % 256).toString(16);
+    	chks = (tot % 256).toString(16).toUpperCase();
         // make sure this is 2 charidacters (1 byte)
-        if (chks.length < 2) {
-            chks = "0" + chks;
-        }
-    	return strcmd + chks;
+        chks = ("0" + chks).slice(-2);
+    	return strcmd + chks + "#";
     };
 
 
@@ -245,6 +229,12 @@ K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 
 
     };
 
+    this.sendcmd = function(str) {
+        var cmdser = "$>28001" + str; 
+        var hstr = addHash(cmdser);
+        g.log(g.LOG_DIAGNOSTIC,"send: " + hstr);
+        self.sendser(hstr);
+    }
 // handleinitialize by base class
 //    this.subscribe = function(name, val, cb) {
 //    }
@@ -256,19 +246,29 @@ K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 
     	var num = parsed.num;
     	var dev = ("0" + num).slice(-2);
     	var cmd2;
-    	switch (value) {
-    		case 'on': cmd2 = 'ON'; break;
-    		case 'off': cmd2 = 'OFF'; break;
-    		case 'dim': cmd2 = 'DIM'; break;
-    		case 'bright': cmd2 = 'BGT'; break;
-    	}
+        if (value.startsWith("PR")) {
+            cmd2 = value;
+        }
+        else {
+        	switch (value) {
+        		case 'on': cmd2 = 'ON'; break;
+        		case 'off': cmd2 = 'OFF'; break;
+        		case 'dim': cmd2 = 'DIM'; break;
+        		case 'bright': cmd2 = 'BGT'; break;
+        	}
+        }
 
         // store the current states of ids
-        states[id] = cmd2;
-
-    	var cmdser = "$>28001" + house + dev + house + dev + ' ' + house + cmd2 + house + cmd2;
-    	sendser(addHash(cmdser));
-    	getresults();
+        if (self.canTrigger(id,cmd2)) {
+            if (cmd2.startsWith("PR")) {
+                self.sendcmd(house+dev);
+                cmd2 = cmd2.substring(4,5) + cmd2.substring(0,3);
+                self.sendcmd(house+dev+ ' ' + cmd2 + cmd2);
+            }
+            else {
+                self.sendcmd(house + dev + house + dev + ' ' + house + cmd2 + house + cmd2);
+            }
+        }
     };
 
     // event trigger "value" is action "cmd"

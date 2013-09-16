@@ -148,9 +148,14 @@ app.get("/location",function(req,res) {
 app.post("/event", function(req,res) {
 });
 
+// http://localhost:82/cmd/event?name=Lights%20out%20bedtime
 app.get("/cmd/event", function (req,res) {
-    var e = g.eventmap[req.parm.name];
-    runEventActions(e);
+    var e = g.eventmap[req.query.name];
+    if (!e) {
+        console.log("event " + req.query.name + " not found");
+        return;
+    }
+    g.runEventActions(e);
     // /cmd/event?name=driveway
     // /cmd/device?name=doorbell&val=on
 });

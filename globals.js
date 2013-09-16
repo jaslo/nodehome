@@ -6,12 +6,6 @@ var path = require("path"),
 
 dateFormat.masks.logTime = 'HH:MM:ss.l';
 var g = {
-
-    ti103init: "192.168.0.143:2001",
-//    ti103init: '/dev/ttyUSB0,{ "baudrate": 9600 }',
-//    acrf2init: "/dev/nul",
-    acrfinit: '/dev/ttyUSB1,{ "baudrate": 4800 }',
-
     MongoHost: "localhost",
     htmlBase: path.join(__dirname,"/html"),
 

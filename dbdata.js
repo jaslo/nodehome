@@ -11,12 +11,20 @@ this.loadDevices = function() {
 	}
 };
 
+g.ti103initialize = "192.168.0.143:2001";
+//    ti103init: '/dev/ttyUSB0,{ "baudrate": 9600 }',
+//    acrf2init: "/dev/nul",
+g.acrfinitialize = '/dev/ttyUSB1,{ "baudrate": 4800 }';
+g.rcsx10binitialize1 = "ti103,K";
+
 // these will live in the database at some point
 this.devices = [
 	{ name: 'cron', driver: 'cron', location:'system', id:'cron' }, // system device
 	{ name: 'sun', driver: 'sun' , location:'system', id:'sun'}, // system device
     { name: 'curl', driver: 'curl', location:'system',id:'curl'}, // system device
     { name: 'homeseerpost', driver: 'homeseerpost', location:'system',id:'homeseerpost'},
+
+    { name: 'thermo', driver: 'rcsx10b', location:'thermo', id:'ti103,K'},
 
     { name: 'rfcontroller 1', location: "kitchen", driver: "acrf", id: "H1"},
     { name: 'rfcontroller 5', location: "kitchen", driver: "acrf", id: "H5"},
@@ -62,29 +70,7 @@ this.devices = [
     { name: 'bugzapper', location: 'outside', driver:'ti103',id:'D9'},
 
 // fake devices
-    {
-    name: 'front lights',
-    location: 'front',
-    group: 'outdoor',
-    driver: 'ti103',
-    id: 'B1'
-    },
-    {name: 'thermo',
-    location: 'thermostat',
-    group: 'thermostat',
-    driver: 'rcsx10b', //txb16
-    id: 'K'
-    },
-    {name: 'switchbutton1',
-    location: 'kitchen',
-    group: 'switches',
-    driver: 'ti103',
-    id: 'E1'
-    },
-	{ name:"atticswitchpanel1",location:"attic",driver:'ti103',id: 'F1'},
-	{ name:"atticswitchpanel2",location:"attic",driver:'ti103',id: 'F2'},
-	{ name:"atticswitchpanel3",location:"attic",driver:'ti103',id: 'F3'},
-
+ 
 	// for variables, the id should be the same as the name
 	{ name: 'drivewayrx', driver: 'variables', id: 'drivewayrx'},
 	{ name: 'virtual test', driver: 'variables', id: 'virtual test'},
@@ -119,7 +105,11 @@ this.devices = [
                 endif
             else if vthis == b2
                 if vlast = 14
-                    writelog("outdoor")
+                    wr        var splits = initparm.split(",");
+        var x10driver =  splits[0];
+        var housecode = splits[1];
+        console.log("x10driver is " + x10driver);
+ itelog("outdoor")
                 else
                     vnext = vthis
                 end if
@@ -149,6 +139,10 @@ this.events = [
 { name: "unoccupied thermostat", actions: [
 	{ do: "device", name: "homeseerpost", value: 'TriggerEvent("unoccupied thermostat")'}
 ]},
+{ name: "all xmas lights off", actions: [
+    { do: "device", name: "xmas tree", value: 'off'}
+]},
+
 // rf events from homeseer, trigger remotely to homeseer
 { name: "remote h1", trigger: 'rfcontroller 1', value:"off", actions: [
     { do: "device", name: "homeseerpost", value: 'TriggerEvent("Arm from Keypad")'}
@@ -221,14 +215,29 @@ this.events = [
 //    { do: "device", name: "curl", value: "POST",
 //        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A15",3)&runscript=Execute+Command&ref_page=ctrl'}
 ]},
+{name: "thermo on", actions: [
+    {do: "device", name: "thermo", value: 'fanon'}
+]},
+{name: "thermo auto", actions: [
+    {do: "device", name: "thermo", value: 'fanauto'}
+]},
 
+{name: "thermo cool", actions: [
+    {do: "device", name: "thermo", value: 'coolpoint', parm: 71}
+]},
+//{ name: "test lights on" , trigger: "cron", value: "*/5 * * * *", actions:[
+//    { do: "device", name: "flourescents", value: 'off'},
+//]},
+//{ name: "test device" , trigger: "cron", value: "2,7,12,17,22,27,32,37,42,47,52,57 * * * *", actions:[
+//    { do: "device", name: "flourescents", value: 'on'},
+//]},
 
 
 
 // test actions
-{ name: "hourly chime" , trigger: "cron", value: "0/30 * * * *", actions:[
-    { do: 'speak', value: 'every quarter hour'}
-]},
+//{ name: "hourly chime" , trigger: "cron", value: "0/30 * * * *", actions:[
+//    { do: 'speak', value: 'every quarter hour'}
+//]},
 { name: "handle switch1", trigger: 'downstairs switch 1', actions: [
 	{ do: 'event', name: 'cascade', delay: "1min"},
 	{ do: 'speak', value: 'switch 1 actions'},

@@ -58,14 +58,10 @@ function acrf() {
         if (self.canTrigger(id,val)) {
             self.publish(id,val);
         }
-        else {
-            g.log(g.LOG_VERBOSE,"x10 " + id + " already set to " + val);
-        }
-
     }
 
     // dev is "A01" or A1
-    this.cmd = function(id, value, parm) {
+    this.set = function(id, value, parm) {
         var parsed = g.parsex10id(id);
         var house = parsed.house;
         var num = parsed.num;
