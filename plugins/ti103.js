@@ -12,6 +12,7 @@ function ti103() {
     var cmdlist = ["ON", "OFF", "DIM", "BGT", "ALN", "AUF", "ALF", "HRQ", "HAK", "PR0", "PR1", "SON", "SOF", "SRQ"];
     var bufferedin = "";
     var lastcheck;
+    var to = null;
 
     serialbase.call(this);
 
@@ -44,7 +45,7 @@ function ti103() {
 //    var states = {}; // current value by unit id
 
     function decodeStr(str) {
-        g.log(g.LOG_DIAGNOSTIC,str);
+        g.log(g.LOG_DIAGNOSTIC,"decode rx:" + str);
         var skipcheck = str.length - 3,
             val,
             house1,
@@ -113,7 +114,7 @@ function ti103() {
                     continue; // buffer full
                 }
     	    	if (str[0] == "?") {
-                    g.log(g.LOG_ERROR,"ti103 packet rejected");
+                    g.log(g.LOG_ERROR,"ti103 packet rejected:" + str);
                     continue;
                 }
     	    	if (str[0] == '!') { // or 1 ? parse a data acknowledgement
@@ -133,8 +134,9 @@ function ti103() {
                 }
             }
             inbuffer = "";
+	        if (!to)
+	        	to = setTimeout(checkStatusLoop,2000);
 	    }
-        setTimeout(checkStatusLoop,2000)
     };
 
     // $>28001A03A03 AONAON81#
@@ -143,6 +145,8 @@ function ti103() {
     // keep sending 'query' until $<2800!4B# is returned?
 
     var checkStatusLoop = function() {
+    	to = null;
+    	//g.log(g.LOG_DIAGNOSTIC,"send ti103 checkstatus");
     	self.sendser("$>2800008C#");
         //setTimeout(checkStatusLoop,5000);
     };
@@ -260,6 +264,7 @@ K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 
 
         // store the current states of ids
         if (self.canTrigger(id,cmd2)) {
+        	//TODO: should publish?
             if (cmd2.startsWith("PR")) {
                 self.sendcmd(house+dev);
                 cmd2 = cmd2.substring(4,5) + cmd2.substring(0,3);

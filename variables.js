@@ -1,4 +1,4 @@
-var driverBase = require("./driverBase");
+var driverBase = require("./plugins/driverBase.js");
 var util = require("util");
 
 function variables() {
@@ -15,6 +15,10 @@ function variables() {
     	// value is the cmd, only "set" supported now
     	console.log("set variable " + id + " to " + parm);
     	vars[id] = value;
+    }
+
+    this.get = function(id) {
+    	return vars[id];
     }
 
     this.driver = {

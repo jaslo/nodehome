@@ -261,6 +261,11 @@ function SunInterface() {
     this.currentSunset = function() { return tset; }
 
 	this.subscribe = function(name, val, cb) {
+		var minus = val.indexOf("-");
+		if (minus > 0) {
+			var pre = val.substr(minus+1);
+			val = val.substr(0,minus);
+		}
         if (val == 'rise') {
             risers.push(cb);
         }

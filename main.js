@@ -12,6 +12,7 @@ var Deferred = require("JQDeferred"),
 	app = require("./app"),
 	xpath = require("xpath"),
 	db = require("./dbdata"),
+	player = require("./wavplayer"),
 	g = require("./globals");
 
 
@@ -24,6 +25,7 @@ var speech = null;
 // no cepstral except on rpi
 //speech = require("./speech/cepstral.js");
 
+var variableDriver;
 var sun = require("./plugins/sunInterface.js");
 sun.initialize("San Jose, Calif.");
 
@@ -77,6 +79,11 @@ function checkEventActions(e) {
 	}
 }
 
+// for scripts
+function variable(id) {
+	return variableDriver.get(id);
+}
+
 // globally accessible to app.js
 g.runEventActions = function(e) {
     e.latest = new Date();
@@ -89,17 +96,17 @@ g.runEventActions = function(e) {
             var da = g.delayedactions[a.name];
             if (da) {
                 g.log(g.LOG_TRACE,"replacing delayed action");
-                clearTimout(da.timeout);
+                clearTimeout(da.timeout);
             }
 			var to = setTimeout((function(a) {
 				return function() { 
                     delete g.delayedactions[a.name];
-                    executeAction(a); 
+                    executeAction(a, e); 
                 };
 			})(a), ms);
             g.delayedactions[a.name] = {act: a, timeout: to};
 		}
-		else executeAction(a);
+		else executeAction(a, e);
 	}
 }
 
@@ -109,7 +116,15 @@ function delayInMs(del) {
 	var ms = 0;
 	if (del.indexOf(':') != -1) {
         // [hh:][mm:][ss][.ms]
-
+        var parts = del.split(":");
+        var total = parts[0] * 3600;
+        if (parts.length > 1) {
+        	total += parts[1] * 60;
+        }
+        if (parts.length > 2) {
+        	total += parts[2];
+        }
+        return total * 1000;
 	}
 	else if (del.endsWith("sec")) {
 		ms = n * 1000;
@@ -132,13 +147,20 @@ function actionToText(a) {
 		case 'speak':
 			text = "speak " + a.value;
 			break;
+		case 'script':
+			text = a.name + "." + a.value + "(" +a.parm + ")";
+			break;
+		case 'play':
+			player.playfile("./media/" + a.name);
+			break;
 	}
 	return text;
 }
 
 // delay if present is already handled
-function executeAction(a) {
-	g.log(g.LOG_TRACE,"action=>" + actionToText(a));
+function executeAction(a,e) {
+	var dolog = !e || (!e.nolog);
+	if (dolog) g.log(g.LOG_TRACE,"action=>" + actionToText(a));
 	switch (a.do) {
 		case 'device':
 			var devinfo = getDeviceInfo(a.name);
@@ -153,6 +175,14 @@ function executeAction(a) {
             //TODO: error if not exists?
 			g.runEventActions(g.eventmap[a.name]);
 			break;
+		case 'script':
+			try {
+				s = require("./scripts/" + a.name); //  + ".js");
+				s[a.value](a.parm);
+			} catch (e) {
+				g.log(g.LOG_ERROR, "script error: " + e + ";" + a.name)
+			}
+			break;
 		case 'speak':
             if (speech) {
                 speech.say(a.value);
@@ -160,6 +190,30 @@ function executeAction(a) {
 			g.log(g.LOG_TRACE,"speaking: " + a.value);
 			break;
 	}
+}
+
+function loadPlugin(p,path) {
+    if (p.endsWith(".js")) {
+    	var d1;
+    	try {
+    		d1 = require(path + p);
+    		if (d1.driver) {
+    			d1.driver.obj = d1;
+    			g.drivermap[d1.driver.name] = d1.driver;
+    			g.log(g.LOG_TRACE,"got driver: " + d1.driver.name);
+                // check for a driver init param
+                var namepart = d1.driver.name; // p.substring(0,p.length-3); // cut off .js
+                if (g[namepart + "init"] && d1.initialize) {
+                	initdrivers.push(d1);
+                }
+                return d1;
+    		}
+    	}
+    	catch (ex) {
+    		g.log(g.LOG_TRACE,"exception " + ex);
+    	}
+    }
+ 	return null;
 }
 
 //
@@ -171,27 +225,12 @@ var pluginfiles = fs.readdirSync("plugins");
 var initdrivers = [];
 for (var i in pluginfiles) {
     var p = pluginfiles[i];
-    if (p.endsWith(".js")) {
-    	var d1;
-    	try {
-    		d1 = require('./plugins/' + p);
-    		if (d1.driver) {
-    			d1.driver.obj = d1;
-    			g.drivermap[d1.driver.name] = d1.driver;
-    			g.log(g.LOG_TRACE,"got driver: " + d1.driver.name);
-                // check for a driver init param
-                var namepart = d1.driver.name; // p.substring(0,p.length-3); // cut off .js
-                if (g[namepart + "init"] && d1.initialize) {
-                	initdrivers.push(d1);
-                }
-
-    		}
-    	}
-    	catch (ex) {
-    		g.log(g.LOG_TRACE,"exception " + ex);
-    	}
-    }
+    var d1 = loadPlugin(p, "./plugins/");
 }
+
+variableDriver = loadPlugin("variables.js","./");
+
+
 for (var i = 0; i < 10; i++) {
 	var method = "initialize" + (i > 0 ? i : "");
 	for (var j in g.drivermap) {

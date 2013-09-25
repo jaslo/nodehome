@@ -14,8 +14,13 @@ this.loadDevices = function() {
 g.ti103initialize = "192.168.0.143:2001";
 //    ti103init: '/dev/ttyUSB0,{ "baudrate": 9600 }',
 //    acrf2init: "/dev/nul",
-g.acrfinitialize = '/dev/ttyUSB1,{ "baudrate": 4800 }';
+//g.acrfinitialize = '/dev/ttyUSB1,{ "baudrate": 4800 }';
+g.acrfinitialize = 'COM7,{ "baudrate": 4800 }';
+
+// these are numbered to run after the "base interface" initialization above
+
 g.rcsx10binitialize1 = "ti103,K";
+g.keypadinitialize1 = "ti103,H";
 
 // these will live in the database at some point
 this.devices = [
@@ -136,8 +141,9 @@ this.events = [
     { do: "speak", value: 'System arming'}
 ]},
 */
-{ name: "unoccupied thermostat", actions: [
-	{ do: "device", name: "homeseerpost", value: 'TriggerEvent("unoccupied thermostat")'}
+{ name: "unoccupied thermostat", nolog: false, actions: [
+	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("unoccupied thermostat")'}
+	//{ do: "device", name: "homeseerpost", value: 'TriggerEvent("unoccupied thermostat")'}
 ]},
 { name: "all xmas lights off", actions: [
     { do: "device", name: "xmas tree", value: 'off'}
@@ -151,9 +157,9 @@ this.events = [
     { do: "device", name: "xmas tree", value: 'off'}
 //    { do: "device", name: "homeseerpost", value: 'TriggerEvent("all xmas lights off")'}
 ]},
-{ name: "remote h6", trigger: 'rfcontroller 6', value:"off", actions: [
-    { do: "device", name: "flourescents", value: 'off'}
-]},
+//{ name: "remote h6", trigger: 'rfcontroller 6', value:"off", actions: [
+//    { do: "device", name: "flourescents", value: 'off'}
+//]},
 { name: "Lights out bedtime", actions: [
 	{ do: "device", name: "Floor Lamp", value: 'off', delay: '5min'},
 	{ do: "device", name: "Couch Light", value: 'off'},
@@ -173,47 +179,45 @@ this.events = [
     { do: "event", name: "Upstairs lights out"}
 ]},
 { name: "remote h5", trigger: 'rfcontroller 5', value:"on", actions: [
-    { do: "device", name: "homeseerpost", value: 'TriggerEvent("kitchen controller h5")'}
+	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("kitchen controller h5")'}
 ]},
-{ name: "remote h6", trigger: 'rfcontroller 6', value:"on", actions: [
-    { do: "device", name: "homeseerpost", value: 'TriggerEvent("kitchen light")'}
-]},
+//{ name: "remote h6", trigger: 'rfcontroller 6', value:"on", actions: [
+//	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("kitchen light")'}
+//]},
 
 { name: "hawkeye a3", trigger: "hawkeye A3", value: "on", actions: [
-    { do: "device", name: "homeseerpost", value: 'setDeviceStatus("A3",2)'}
+	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A3",2)'}
 ]},
 { name: "hawkeye a3", trigger: "hawkeye A3", value: "off", actions: [
-    { do: "device", name: "homeseerpost", value: 'setDeviceStatus("A3",3)'}
+	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A3",3)'}
 ]},
 
 { name: "hawkeye a4", trigger: "hawkeye A4", value: "on", actions: [
-    { do: "device", name: "homeseerpost", value: 'setDeviceStatus("A4",2)'}
+	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A4",2)'}
 ]},
 { name: "hawkeye a4", trigger: "hawkeye A4", value: "off", actions: [
-    { do: "device", name: "homeseerpost", value: 'setDeviceStatus("A4",3)'}
+	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A4",3)'}
 ]},
 
 { name: "hawkeye a6", trigger: "hawkeye A6", value: "on", actions: [
-    { do: "device", name: "homeseerpost", value: 'setDeviceStatus("A6",2)'}
+	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A6",2)'}
 ]},
 { name: "hawkeye a6", trigger: "hawkeye A3", value: "off", actions: [
-    { do: "device", name: "homeseerpost", value: 'setDeviceStatus("A6",3)'}
+	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A6",3)'}
 ]},
 
-{ name: "hawkeye a14", trigger: "kitchen motion", value: "on", actions: [
-    { do: "device", name: "homeseerpost", value: 'setDeviceStatus("A14",2)'}
+{ name: "hawkeye a14", trigger: "kitchen motion", value: "on", nolog: true, actions: [
+    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",2)'}
 ]},
-{ name: "hawkeye a14", trigger: "kitchen motion", value: "off", actions: [
-    { do: "device", name: "homeseerpost", value: 'setDeviceStatus("A14",3)'}
+{ name: "hawkeye a14", trigger: "kitchen motion", value: "off", nolog: true, actions: [
+    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",3)'}
 ]},
 
 { name: "hawkeye a15", trigger: "kitchen light sensor", value: "on", actions: [
-    { do: "device", name: "homeseerpost", value: 'setDeviceStatus("A5",2)'}
+    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A5",2)'}
 ]},
 { name: "hawkeye a15", trigger: "kitchen light sensor", value: "off", actions: [
-    { do: "device", name: "homeseerpost", value: 'setDeviceStatus("A5",3)'}
-//    { do: "device", name: "curl", value: "POST",
-//        parm: 'http://192.168.0.99:82 scriptcmd=hs.setDeviceStatus("A15",3)&runscript=Execute+Command&ref_page=ctrl'}
+    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A5",3)'}
 ]},
 {name: "thermo on", actions: [
     {do: "device", name: "thermo", value: 'fanon'}
@@ -225,6 +229,15 @@ this.events = [
 {name: "thermo cool", actions: [
     {do: "device", name: "thermo", value: 'coolpoint', parm: 71}
 ]},
+
+{name: "kitchen from switch on", trigger: "downstairs switch 1", value: "on", actions: [
+	{ do: "device", name: "flourescents", value: 'on'}
+]},
+
+{name: "kitchen from switch on", trigger: "downstairs switch 1", value: "off", actions: [
+	{ do: "device", name: "flourescents", value: 'off'}
+]},
+
 //{ name: "test lights on" , trigger: "cron", value: "*/5 * * * *", actions:[
 //    { do: "device", name: "flourescents", value: 'off'},
 //]},
@@ -232,64 +245,22 @@ this.events = [
 //    { do: "device", name: "flourescents", value: 'on'},
 //]},
 
-
-
-// test actions
-//{ name: "hourly chime" , trigger: "cron", value: "0/30 * * * *", actions:[
-//    { do: 'speak', value: 'every quarter hour'}
-//]},
-{ name: "handle switch1", trigger: 'downstairs switch 1', actions: [
-	{ do: 'event', name: 'cascade', delay: "1min"},
-	{ do: 'speak', value: 'switch 1 actions'},
-	{ do: 'device', name: 'virtual test', value: 'set', parm: 'end switch 1'}
+//{ name: "Evening Lights On", trigger: "sun", value:"set-1:00", actions:[
+{ name: "Evening Lights On", trigger: "sun", value:"set", actions:[
+	{do: "device", name: "Floor Lamp", value: "on"},
+	{do: "device", name: "flourescents", value: "on"},
+	{do: "device", name: "bugzapper", value: "on"},
+	{do: "device", name: "Rock Light", value: "on", delay: "30min"},
+	{do: "device", name: "Tiffany Lamp", value: "on", delay: "0:05"},
+	{do: "device", name: "xmas tree", value: "on", delay: "20min"},
+	{do: "device", name: "porch lights", value: "on"}
 ]},
-{ name: "cascade", actions: [
-	{ do: 'speak', value: 'running cascade now'},
-	{ do: 'device', name: 'virtual test', value: 'set', parm: 'end cascade', delay: "2min"}
+
+{ name: "Evening Lights Out", trigger: "cron", value:"0 20 * * * *", actions:[
+	{do: "device", name: "Tiffany Lamp", value: "off", delay: "2:00"},
 ]}
-
 ];
-/*
 
-{ name: 'bedtime dingding', actions: [
-    { do: 'device', name: "thermo", value: "setheat", parm: "60"},
-    { do: 'device', name: "thermo", value: "setcool", parm: "75"},
-    { do: 'device', name: "porchlight", value: "off", delay: "120min"},
-    ]
-},
-{ name: 'doorbell', trigger: "atticswitchpanel1", value:"on", actions: [
-    { do: 'event', name: 'bedtime dingding'},
-    { do: 'device', name: 'front lights', value: 'on'},
-    { do: 'speak', name: 'time for bed'}
-    ]
-},
-{ name : 'ev1', trigger: 'switchbutton1', value: 'on', actions: [
-    { do: 'device', name: 'front lights', value: 'on'},
-    { do: 'event', name: 'bedtime dingding'}
-    ]
-},
-{ name: 'ev2', trigger: 'Driveway IR Beam', value: 'on', actions: [
-    { do: 'speak', name: 'ding ding'},
-    { do: 'device', name: 'drivewayrx', value: 'set', parm: 'true'},
-    { do: 'device', name: 'drivewayrx', value: 'set', parm: 'false', delay: '10min'}
-    ]
-},
-{ name: 'ev3', trigger: 'cron', value: '0 7 * * mon,wed,fri', actions: [
-    { do: 'device', name: 'front sprinkler 1', value: 'on', delay: '0min'},
-    { do: 'device', name: 'front sprinkler 1', value: 'off', delay: '15min'},
-    { do: 'device', name: 'front sprinkler 2', value: 'on', delay: '16min'},
-    { do: 'device', name: 'front sprinkler 2', value: 'off', delay: '30min'},
-    { do: 'device', name: 'front sprinkler mound', value: 'on', delay: '31min'},
-    { do: 'device', name: 'front sprinkler mound', value: 'off', delay: '46min'}
-    ]
-},
-{ name: 'ev3', trigger: 'sun', value: 'set', actions: [
-    { do: 'device', name: 'security lights', value: 'on', delay: '15min'}
-
-    ]
-}
-];
-*/
 }
 
 module.exports = new db();

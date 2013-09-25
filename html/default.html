@@ -54,7 +54,7 @@
                     htmlstr += '<tr><td>' + val.actions[act].text + '</td></tr>';
                 });
                 htmlstr += '</table></td>';
-                htmlstr += '<td>' + val.latest + '</td>';
+                htmlstr += '<td>' + (val.latest ? new Date(val.latest).format("default") : "never") + '</td>';
                 htmlstr += '</tr>';
             });
             htmlstr += '</tbody></table>';
@@ -133,7 +133,7 @@
                 '<td><a href="#">' + val.driver + '</a></td>' +
                 '<td><a href="#">' + val.id + '</a></td>' +
                 '<td><a href="#">' + val.group + '</a></td>' +
-                '<td>' + (val.latest ? val.latest : 'never')+ '</td>' +
+                '<td>' + (val.latest ? new Date(val.latest).format("default") : 'never')+ '</td>' +
                 '</tr>';
             });
             htmlstr += '</tbody></table>';

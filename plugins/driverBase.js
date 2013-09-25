@@ -11,7 +11,7 @@ function driverbase() {
         var now = new Date().getTime();
         if (!states[id] || states[id].val != val) {
             states[id] = {'val': val, 'last': now };
-            g.log(g.LOG_TRACE,"set x10 " + id + " to " + val);
+            //g.log(g.LOG_TRACE,"cantrigger: set x10 " + id + " to " + val);
             return true;
         }
         var since = now - states[id].last;
@@ -20,7 +20,7 @@ function driverbase() {
             g.log(g.LOG_TRACE,"retrigger x10 " + id + " to " + val);
             return true;
         }
-        g.log(g.LOG_VERBOSE,"x10 " + id + " already set to " + val);
+        //g.log(g.LOG_VERBOSE,"x10 " + id + " already set to " + val);
         return false;
     }
 
@@ -29,6 +29,7 @@ function driverbase() {
         if (!val) {
         	val = undefined;
         }
+        else val = val.toLowerCase();
 
         if (!subtbl[idexp]) {
             subtbl[idexp] = {};
@@ -40,6 +41,7 @@ function driverbase() {
 	};
 
 	this.publish = function(id, val) {
+		val = val.toLowerCase();
 		for (var idexp in subtbl) {
 			if (!subtbl.hasOwnProperty(idexp)) continue;
 			if (id.match(idexp)) {

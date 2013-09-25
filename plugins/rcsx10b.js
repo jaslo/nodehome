@@ -5,6 +5,7 @@ url = require("url"),
 g = require("../globals");
 
 function rcsx10b() {
+	var self = this;
     var x10driver;
     var housecode;
 
@@ -78,10 +79,10 @@ function rcsx10b() {
             // preset dim
             // break out unit/level PR0-B
             // K6 PR0-B
-            g.log(g.LOG_TRACE,"got thermostat message");
+            g.log(g.LOG_TRACE,"got thermostat message " + idexp + ";" + val);
             var letter = val.substr(4);
-            var level = toBigEndCodes[letter.charCodeAt(0)-'A'.charCodeAt(0)];
-            if (val.substr(2,3) == '1') level += 16;
+            var level = toBigEndCodes[letter.charCodeAt(0)-'a'.charCodeAt(0)];
+            if (val.substr(2,1) == '1') level += 16;
             // now level is 0-31
             var unit = parseInt(idexp.substr(1));
             // convert to temp

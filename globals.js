@@ -25,7 +25,9 @@ var g = {
 
     log: function(level, message) {
         if (level <= g.maxLogLevel) {
-            console.log(dateFormat(new Date(),"logTime") + " " + message);
+        	var line = dateFormat(new Date(),"logTime") + " " + message
+            console.log(line);
+            //fs.append("/var/logs/nodehouse.log",line + "\n");
         }
     },
 
