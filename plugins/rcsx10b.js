@@ -79,7 +79,7 @@ function rcsx10b() {
             // preset dim
             // break out unit/level PR0-B
             // K6 PR0-B
-            g.log(g.LOG_TRACE,"got thermostat message " + idexp + ";" + val);
+            g.log(g.LOG_DIAGNOSTIC,"got thermostat message " + idexp + ";" + val);
             var letter = val.substr(4);
             var level = toBigEndCodes[letter.charCodeAt(0)-'a'.charCodeAt(0)];
             if (val.substr(2,1) == '1') level += 16;
@@ -89,7 +89,7 @@ function rcsx10b() {
             var temp;
             if (unit >= 11) {
                 temp = basetemps[unit-11] + level;
-                g.log(g.LOG_TRACE,"temp: " + temp);
+                g.log(g.LOG_DIAGNOSTIC,"temp: " + temp);
             }
             if (unit == 6) {
                 var cmdstr = "reporting ";

@@ -73,7 +73,7 @@ function actiontext(act) {
 
 function dodefault(res) {
     res.render('default.html');
-}    
+}
 
 app.get('/', function(req, res) {
     console.log("redirect / to login1.html");
@@ -84,7 +84,7 @@ app.get('/', function(req, res) {
 //
 // driver -> event list
 // typename x10,timer variable
-// 
+//
 function refreshMain(req,res) {
     res.render('default.html');
 }
@@ -106,15 +106,15 @@ function refreshMain(req,res) {
 //
 
 
-// 
+//
 // add a device
 app.post("/device", function(req,res) {
-   // device is 
+   // device is
    // name, location, group, drivername
    // id
-   db.addDevice(req.body.name, req.body.location, req.body.group, req.body.drivername, 
+   db.addDevice(req.body.name, req.body.location, req.body.group, req.body.drivername,
     req.body.id).
-    then(function() { 
+    then(function() {
         refreshMain(req,res);
     });
 });
@@ -164,10 +164,14 @@ app.get("/cmd/event", function (req,res) {
 //get events
 //TODO: should return JSON not html
 app.get("/event", function(req,res) {
-    res.send(200, g.eventmap);
+    if (req.name) {
+        if (g.eventmap[req.name]) {
+            res.send(200, g.eventmap[req.name]);
+        }
+        else res.send(404);
+    }
+    else res.send(200, g.eventmap);
 });
-
-
 
 module.exports = app;
 

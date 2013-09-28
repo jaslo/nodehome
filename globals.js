@@ -21,7 +21,7 @@ var g = {
     LOG_URGENT: 1,
     LOG_CRITICAL: 0,
 
-    maxLogLevel: 9,
+    maxLogLevel: 8,
 
     log: function(level, message) {
         if (level <= g.maxLogLevel) {

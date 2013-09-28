@@ -86,6 +86,8 @@ function variable(id) {
 
 // globally accessible to app.js
 g.runEventActions = function(e) {
+	var dolog = !e || (!e.nolog);
+	if (dolog) g.log(g.LOG_TRACE,"event=>" + e.name);
     e.latest = new Date();
 	// run the event actions
 	for (var i1 in e.actions) {
@@ -95,13 +97,13 @@ g.runEventActions = function(e) {
             //TODO: track all the currently "delayed" actions
             var da = g.delayedactions[a.name];
             if (da) {
-                g.log(g.LOG_TRACE,"replacing delayed action");
+                g.log(g.LOG_TRACE,"replacing delayed action " + a.name);
                 clearTimeout(da.timeout);
             }
 			var to = setTimeout((function(a) {
-				return function() { 
+				return function() {
                     delete g.delayedactions[a.name];
-                    executeAction(a, e); 
+                    executeAction(a, e);
                 };
 			})(a), ms);
             g.delayedactions[a.name] = {act: a, timeout: to};
@@ -168,6 +170,7 @@ function executeAction(a,e) {
             if (typeof(devinfo.device.id) != "string") {
                 g.log(g.LOG_ERROR, "bad device for " + a.name);
             }
+            g.devicemap[a.name].state = a.value;
             devinfo.driver.obj.publish(devinfo.device.id, a.value);
 			devinfo.driver.obj.set(devinfo.device.id, a.value, a.parm);
 			break;

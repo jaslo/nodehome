@@ -122,6 +122,7 @@
             // build html from the JSON returned
             var htmlstr = '<table id="deviceTable" class="tablesorter" cellspacing="1">'
                 + '<thead><tr><th>name</th><th>location</th><th>driver</th><th>id</th>'
+                + '<th>state</th>'
                 + '<th>group</th>'
                 + '<th>latest</th>'
                 + '</tr></thead><tbody>';
@@ -132,6 +133,7 @@
                 '<td><a href="#">' + val.location + '</a></td>' +
                 '<td><a href="#">' + val.driver + '</a></td>' +
                 '<td><a href="#">' + val.id + '</a></td>' +
+                '<td><a href="#">' + val.state + '</a></td>' +
                 '<td><a href="#">' + val.group + '</a></td>' +
                 '<td>' + (val.latest ? new Date(val.latest).format("default") : 'never')+ '</td>' +
                 '</tr>';

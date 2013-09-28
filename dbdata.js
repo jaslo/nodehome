@@ -7,6 +7,7 @@ var self = this;
 this.loadDevices = function() {
 	for (var i in self.devices) {
 		var d = self.devices[i];
+        d.state = "none";
 		g.devicemap[d.name] = d;
 	}
 };
@@ -75,7 +76,7 @@ this.devices = [
     { name: 'bugzapper', location: 'outside', driver:'ti103',id:'D9'},
 
 // fake devices
- 
+
 	// for variables, the id should be the same as the name
 	{ name: 'drivewayrx', driver: 'variables', id: 'drivewayrx'},
 	{ name: 'virtual test', driver: 'variables', id: 'virtual test'},
@@ -129,7 +130,7 @@ this.devices = [
     vlast = vnext
 */
 
-// for cron: min hour day month dayofweek (0-6 Sun-Sat)
+// for cron: sec min hour day month dayofweek (0-6 Sun-Sat)
 
 // {name: "arm state", device: "variables", id: "Z6"}
 
@@ -141,6 +142,10 @@ this.events = [
     { do: "speak", value: 'System arming'}
 ]},
 */
+{ name: "back door switch", trigger: "Back door", value: "on", actions: [
+    {do: "script", name: "backdoor", value:"run", parm: "B2"},
+    {do: "device", name: "Back door", value:"off"}
+]},
 { name: "unoccupied thermostat", nolog: false, actions: [
 	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("unoccupied thermostat")'}
 	//{ do: "device", name: "homeseerpost", value: 'TriggerEvent("unoccupied thermostat")'}
@@ -214,10 +219,10 @@ this.events = [
 ]},
 
 { name: "hawkeye a15", trigger: "kitchen light sensor", value: "on", actions: [
-    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A5",2)'}
+    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A15",2)'}
 ]},
 { name: "hawkeye a15", trigger: "kitchen light sensor", value: "off", actions: [
-    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A5",3)'}
+    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A15",3)'}
 ]},
 {name: "thermo on", actions: [
     {do: "device", name: "thermo", value: 'fanon'}
@@ -256,7 +261,7 @@ this.events = [
 	{do: "device", name: "porch lights", value: "on"}
 ]},
 
-{ name: "Evening Lights Out", trigger: "cron", value:"0 20 * * * *", actions:[
+{ name: "Evening Lights Out", trigger: "cron", value:"0 0 20 * * *", actions:[
 	{do: "device", name: "Tiffany Lamp", value: "off", delay: "2:00"},
 ]}
 ];
