@@ -5,7 +5,7 @@ var Speaker = require('speaker');
 function wavplayer() {
 	
 	this.playfile = function(f) {
-		var file = fs.createReadStream('f');
+		var file = fs.createReadStream(f);
 		var reader = new wav.Reader();
 
 		// the "format" event gets emitted at the end of the WAVE header

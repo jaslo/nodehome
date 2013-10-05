@@ -1,11 +1,12 @@
 
-var g = require("../globals");
+var evactions = require("../evactions"),
+	g = require("../globals");
 
-var RETRIGGER = 30 * 1000; // 30 sec then retrigger OK
+var RETRIGGER = 2 * 1000; // 30 sec then retrigger OK
 
 function driverbase() {
+	var self = this;
     var states = {};
-	var subtbl = {};
 
     this.canTrigger = function (id,val) {
         var now = new Date().getTime();
@@ -31,25 +32,34 @@ function driverbase() {
         }
         else val = val.toLowerCase();
 
-        if (!subtbl[idexp]) {
-            subtbl[idexp] = {};
+        if (!g.subtbl[idexp]) {
+            g.subtbl[idexp] = {};
         }
-        if (!subtbl[idexp][val]) {
-        	subtbl[idexp][val] = [];
+        if (!g.subtbl[idexp][val]) {
+        	g.subtbl[idexp][val] = [];
         }
-        subtbl[idexp][val].push(cb);
+        g.subtbl[idexp][val].push(cb);
 	};
 
-	this.publish = function(id, val) {
-		val = val.toLowerCase();
-		for (var idexp in subtbl) {
-			if (!subtbl.hasOwnProperty(idexp)) continue;
+	this.publish = function(id,val) {
+		val = val.toLowerCase()
+		evactions.setDriverDevice(self.driver.name, id,val);
+		this.notify(id,val);
+	}
+
+	this.publishEvent = function(id,val) {
+		this.notify(id,val.toLowerCase());
+	}
+
+	this.notify = function(id, val) {
+		for (var idexp in g.subtbl) {
+			if (!g.subtbl.hasOwnProperty(idexp)) continue;
 			if (id.match(idexp)) {
-				if (subtbl[idexp][undefined]) {
-                    subtbl[idexp][undefined].forEach(function(f) { f(id,val); });
+				if (g.subtbl[idexp][undefined]) {
+                    g.subtbl[idexp][undefined].forEach(function(f) { f(id,val); });
                 }
-				if (subtbl[idexp][val]) {
-					subtbl[idexp][val].forEach(function(f) { f(id,val); });					
+				if (g.subtbl[idexp][val]) {
+					g.subtbl[idexp][val].forEach(function(f) { f(id,val); });					
 				}
 			}
 		}

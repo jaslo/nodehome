@@ -1,9 +1,10 @@
-
+var Deferred = require("JQDeferred"),
+	scriptlib = require("../scriptlib");
 
 function countdown() {
 
     function count(n,d) {
-        if (device("keypad") == "off") {
+        if (scriptlib.deviceState("keypad") == "on") {
             d.resolve(0);
             return;
         }
@@ -11,15 +12,17 @@ function countdown() {
             d.resolve(1);
             return;
         }
-        say(d);
+        if (n % 10 == 0 || n < 10) {
+        	scriptlib.say(n);
+        }
         setTimeout(function() {
             count(n-1,d);
         },1000);
     }
 
-    this.countdown = function() {
+    this.countdown = function(maxSeconds) {
         var d = new Deferred();
-        count(g.maxSeconds, d);
+        count(maxSeconds, d);
         return d.promise();
     }
 }

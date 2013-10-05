@@ -8,6 +8,7 @@ this.loadDevices = function() {
 	for (var i in self.devices) {
 		var d = self.devices[i];
         d.state = "none";
+        if (!d.id) d.id = d.name;
 		g.devicemap[d.name] = d;
 	}
 };
@@ -29,6 +30,7 @@ this.devices = [
 	{ name: 'sun', driver: 'sun' , location:'system', id:'sun'}, // system device
     { name: 'curl', driver: 'curl', location:'system',id:'curl'}, // system device
     { name: 'homeseerpost', driver: 'homeseerpost', location:'system',id:'homeseerpost'},
+    { name: 'keypad', driver: 'keypad', location: 'system', id: 'keypad'},
 
     { name: 'thermo', driver: 'rcsx10b', location:'thermo', id:'ti103,K'},
 
@@ -39,9 +41,9 @@ this.devices = [
     { name: 'rfcontroller 8', location: "kitchen", driver: "acrf", id: "H8"},
 
     // rf motion sensors (hawkeye)
-    {name: "hawkeye A3", location: "downstairs", driver: "acrf", id: "A3" },
+    {name: "downstairs motion", location: "downstairs", driver: "acrf", id: "A3" },
     {name: "hawkeye A4", location: "porch", driver: "acrf", id: "A4" },
-    {name: "hawkeye A6", location: "stairwell", driver: "acrf", id: "A6" },
+    {name: "stairwell motion", location: "stairwell", driver: "acrf", id: "A6" },
     {name: "kitchen motion", location: "kitchen", driver: "acrf", id: "A14" },
     {name: "kitchen light sensor", location: "kitchen", driver: "acrf", id: "A15" },
 
@@ -75,77 +77,59 @@ this.devices = [
     { name: 'Couch Light', location: 'downstairs', driver:'ti103',id:'D8'},
     { name: 'bugzapper', location: 'outside', driver:'ti103',id:'D9'},
 
-// fake devices
-
 	// for variables, the id should be the same as the name
-	{ name: 'drivewayrx', driver: 'variables', id: 'drivewayrx'},
-	{ name: 'virtual test', driver: 'variables', id: 'virtual test'},
-	{ name: "arm state", driver: "variables", id: "Z6"}
+	{ name: 'drivewayrx', driver: 'variables'},
+	{ name: 'virtual test', driver: 'variables'},
+	{ name: "arm state", driver: "variables"},
+	{ name: "devlast", driver: "variables"}
 ];
-
-// for motion/alarm
-/*
-    if (this is a motion trigger ) gotAlarm - true
-
-    if gotalarm and alarm == armed then {
-        // motion while armed
-        alarm = counting
-        nret = warning countdown
-        devalarm = "off"
-        device H16 = 2
-        if (nret code entered return)
-        else {
-            console (disarmed)
-            event "InDoor"
-            vnext = ""
-        }
-    }
-    elseif vlast == vthis {
-        vthis.lastchange = now
-    }
-    else {
-        if (vlast.lastchange - now  < 2 minutes) {
-            if (vthis == a14)
-                if vlast == b2 (door)
-                    writelog("indoor")
-                endif
-            else if vthis == b2
-                if vlast = 14
-                    wr        var splits = initparm.split(",");
-        var x10driver =  splits[0];
-        var housecode = splits[1];
-        console.log("x10driver is " + x10driver);
- itelog("outdoor")
-                else
-                    vnext = vthis
-                end if
-            else if !gotalarm
-                writelog("unexpected vthis")
-            end if
-        }
-        else {
-            vnext = vthis;
-        }
-    }
-    vlast = vnext
-*/
 
 // for cron: sec min hour day month dayofweek (0-6 Sun-Sat)
 
 // {name: "arm state", device: "variables", id: "Z6"}
 
 this.events = [
-/*{ name: "Arm from Keypad", actions: [
-    { do: "speak", value: 'arming'},
-    { do: "device", name: "homeseerpost", value: 'TriggerEvent("unoccupied thermostat")'},
-	{ do: "device", name: "arm state", value:"arming"},
-    { do: "speak", value: 'System arming'}
-]},
-*/
+
+/////////////////////////////
+// these events are the security alarm
 { name: "back door switch", trigger: "Back door", value: "on", actions: [
-    {do: "script", name: "backdoor", value:"run", parm: "B2"},
+    {do: "script", name: "backdoor", value:"run", parm: "Back door"},
     {do: "device", name: "Back door", value:"off"}
 ]},
+
+// rf events from homeseer, trigger remotely to homeseer
+{ name: "arm from keypad", trigger: 'rfcontroller 1', value:"off", actions: [
+//    { do: "script", name: "homeseerpost", value:"Post", parm: 'TriggerEvent("Arm from Keypad")'},
+    { do: "device", name: "arm state", value: "arming"},
+    { do: "speak", value: "arming"}
+]},
+
+{ name: "driveway ir", trigger: 'Driveway IR Beam', value: "on", actions: [
+	{ do: "device", name: "Driveway IR Beam", value: "off"},
+	{ do: "play", name: "ding.wav"},
+	{ do: "speak", value: "driveway"},
+	{ do: "script", name: "driveway", value: "Run" }
+]},
+
+{ name: "hawkeye a14", trigger: "kitchen motion", value: "on", nolog: true, actions: [
+    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",2)'},
+    {do: "script", name: "backdoor", value:"run", parm: "kitchen motion"},
+]},
+
+{ name: "downstairs motion", trigger: "downstairs motion", value: "on", nolog: true, actions: [
+    {do: "script", name: "backdoor", value:"run", parm: "downstairs motion"},
+]},
+
+{ name: "stairwell motion", trigger: "stairwell motion", value: "on", nolog: true, actions: [
+    {do: "script", name: "backdoor", value:"run", parm: "stairwell motion"},
+]},
+
+//////////////////////////////////////////
+
+{ name: "hawkeye a14", trigger: "kitchen motion", value: "off", nolog: true, actions: [
+    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",3)'}
+]},
+
 { name: "unoccupied thermostat", nolog: false, actions: [
 	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("unoccupied thermostat")'}
 	//{ do: "device", name: "homeseerpost", value: 'TriggerEvent("unoccupied thermostat")'}
@@ -154,10 +138,6 @@ this.events = [
     { do: "device", name: "xmas tree", value: 'off'}
 ]},
 
-// rf events from homeseer, trigger remotely to homeseer
-{ name: "remote h1", trigger: 'rfcontroller 1', value:"off", actions: [
-    { do: "device", name: "homeseerpost", value: 'TriggerEvent("Arm from Keypad")'}
-]},
 { name: "remote h5", trigger: 'rfcontroller 5', value:"off", actions: [
     { do: "device", name: "xmas tree", value: 'off'}
 //    { do: "device", name: "homeseerpost", value: 'TriggerEvent("all xmas lights off")'}
@@ -190,10 +170,10 @@ this.events = [
 //	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("kitchen light")'}
 //]},
 
-{ name: "hawkeye a3", trigger: "hawkeye A3", value: "on", actions: [
+{ name: "hawkeye a3", trigger: "downstairs motion", value: "on", actions: [
 	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A3",2)'}
 ]},
-{ name: "hawkeye a3", trigger: "hawkeye A3", value: "off", actions: [
+{ name: "hawkeye a3", trigger: "downstairs motion", value: "off", actions: [
 	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A3",3)'}
 ]},
 
@@ -204,18 +184,11 @@ this.events = [
 	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A4",3)'}
 ]},
 
-{ name: "hawkeye a6", trigger: "hawkeye A6", value: "on", actions: [
+{ name: "hawkeye a6", trigger: "stairwell motion", value: "on", actions: [
 	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A6",2)'}
 ]},
-{ name: "hawkeye a6", trigger: "hawkeye A3", value: "off", actions: [
+{ name: "hawkeye a6", trigger: "stairwell motion", value: "off", actions: [
 	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A6",3)'}
-]},
-
-{ name: "hawkeye a14", trigger: "kitchen motion", value: "on", nolog: true, actions: [
-    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",2)'}
-]},
-{ name: "hawkeye a14", trigger: "kitchen motion", value: "off", nolog: true, actions: [
-    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",3)'}
 ]},
 
 { name: "hawkeye a15", trigger: "kitchen light sensor", value: "on", actions: [
@@ -263,7 +236,14 @@ this.events = [
 
 { name: "Evening Lights Out", trigger: "cron", value:"0 0 20 * * *", actions:[
 	{do: "device", name: "Tiffany Lamp", value: "off", delay: "2:00"},
-]}
+]},
+
+{ name: "security ligts off dawn", trigger: "sun", value:"rise", actions:[
+	{do: "device", name: "Rock Light", value: "off", delay: "1:00:00"},
+	{do: "device", name: "porch lights", value: "off", delay: "1:00:00"}
+]},
+
+
 ];
 
 }

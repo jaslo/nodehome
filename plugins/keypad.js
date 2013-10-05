@@ -2,6 +2,7 @@ var driverBase = require("./driverBase");
 var http = require("http"),
 util = require("util"),
 url = require("url"),
+scriptlib = require("../scriptlib"),
 g = require("../globals");
 
 function keypad() {
@@ -28,9 +29,13 @@ function keypad() {
         console.log("x10driver is " + x10driver);
 
         // all unit codes, all values
-        g.drivermap[x10driver].obj.subscribe(housecode + ".*", null,function(idexp,val) {
+        g.drivermap[x10driver].obj.subscribe(housecode + "[1-4]", "on",function(idexp,val) {
             // on matching house data
-            if (code[history] == val) {
+            var thiscode = idexp.substr(1);
+
+            scriptlib.say(thiscode);
+
+            if (code[history] == thiscode) {
                 history++;
                 if (history == code.length) {
                     if (self.canTrigger("keypad","on")) {
@@ -38,7 +43,10 @@ function keypad() {
                     }
                 }
             }
-            else history = 0;
+            else {
+            	history = 0;
+            	if (code[0] == thiscode) history = 1;
+            }
         });
     }
 

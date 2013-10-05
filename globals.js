@@ -21,7 +21,7 @@ var g = {
     LOG_URGENT: 1,
     LOG_CRITICAL: 0,
 
-    maxLogLevel: 8,
+    maxLogLevel: 9,
 
     log: function(level, message) {
         if (level <= g.maxLogLevel) {
@@ -52,6 +52,8 @@ g.drivermap = {};
 g.devicemap = {};
 g.eventmap = {};
 g.delayedactions = {};
+g.subtbl = {};
+g.variableDriver = null;
 
 if (!String.prototype.hasOwnProperty("endsWith")) {
     String.prototype.endsWith = function(suffix) {

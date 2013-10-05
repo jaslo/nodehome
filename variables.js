@@ -1,5 +1,6 @@
 var driverBase = require("./plugins/driverBase.js");
 var util = require("util");
+var g = require("./globals.js");
 
 function variables() {
 // handle by base class
@@ -13,7 +14,7 @@ function variables() {
 
     this.set = function(id, value, parm) {
     	// value is the cmd, only "set" supported now
-    	console.log("set variable " + id + " to " + parm);
+    	g.log("set variable " + id + " to " + value);
     	vars[id] = value;
     }
 
