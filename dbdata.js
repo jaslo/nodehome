@@ -13,11 +13,11 @@ this.loadDevices = function() {
 	}
 };
 
-g.ti103initialize = "192.168.0.143:2001";
+g.ti103initialize = "192.168.0.143:2001"; // 9600
 //    ti103init: '/dev/ttyUSB0,{ "baudrate": 9600 }',
 //    acrf2init: "/dev/nul",
-//g.acrfinitialize = '/dev/ttyUSB1,{ "baudrate": 4800 }';
-g.acrfinitialize = 'COM7,{ "baudrate": 4800 }';
+g.acrfinitialize = '/dev/ttyUSB0,{ "baudrate": 4800 }';
+//g.acrfinitialize = 'COM7,{ "baudrate": 4800 }';
 
 // these are numbered to run after the "base interface" initialization above
 
@@ -112,7 +112,7 @@ this.events = [
 ]},
 
 { name: "hawkeye a14", trigger: "kitchen motion", value: "on", nolog: true, actions: [
-    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",2)'},
+//    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",2)'},
     {do: "script", name: "backdoor", value:"run", parm: "kitchen motion"},
 ]},
 
@@ -164,38 +164,38 @@ this.events = [
     { do: "event", name: "Upstairs lights out"}
 ]},
 { name: "remote h5", trigger: 'rfcontroller 5', value:"on", actions: [
-	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("kitchen controller h5")'}
+	//{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("kitchen controller h5")'}
 ]},
 //{ name: "remote h6", trigger: 'rfcontroller 6', value:"on", actions: [
 //	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("kitchen light")'}
 //]},
 
 { name: "hawkeye a3", trigger: "downstairs motion", value: "on", actions: [
-	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A3",2)'}
+	//{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A3",2)'}
 ]},
 { name: "hawkeye a3", trigger: "downstairs motion", value: "off", actions: [
-	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A3",3)'}
+	//{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A3",3)'}
 ]},
 
 { name: "hawkeye a4", trigger: "hawkeye A4", value: "on", actions: [
-	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A4",2)'}
+	//{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A4",2)'}
 ]},
 { name: "hawkeye a4", trigger: "hawkeye A4", value: "off", actions: [
-	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A4",3)'}
+	//{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A4",3)'}
 ]},
 
 { name: "hawkeye a6", trigger: "stairwell motion", value: "on", actions: [
-	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A6",2)'}
+	//{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A6",2)'}
 ]},
 { name: "hawkeye a6", trigger: "stairwell motion", value: "off", actions: [
-	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A6",3)'}
+	//{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A6",3)'}
 ]},
 
 { name: "hawkeye a15", trigger: "kitchen light sensor", value: "on", actions: [
-    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A15",2)'}
+    //{ do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A15",2)'}
 ]},
 { name: "hawkeye a15", trigger: "kitchen light sensor", value: "off", actions: [
-    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A15",3)'}
+    //{ do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A15",3)'}
 ]},
 {name: "thermo on", actions: [
     {do: "device", name: "thermo", value: 'fanon'}

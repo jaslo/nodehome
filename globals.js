@@ -2,12 +2,18 @@ var path = require("path"),
     argv = require("optimist").argv,
     cluster = require("cluster"),
     Deferred = require("JQDeferred"),
+    url = require("url"),
+    http = require("http"),
     dateFormat = require("dateformat");
 
 dateFormat.masks.logTime = 'HH:MM:ss.l';
 var g = {
     MongoHost: "localhost",
     htmlBase: path.join(__dirname,"/html"),
+
+    loglist: [],
+    logcount: 0,
+    loglimit: 500,
 
     LOG_VERBOSE: 10,
     LOG_DIAGNOSTIC: 9,
@@ -25,9 +31,14 @@ var g = {
 
     log: function(level, message) {
         if (level <= g.maxLogLevel) {
-        	var line = dateFormat(new Date(),"logTime") + " " + message
+        	var line = dateFormat(new Date(),"logTime") + " " + message;
             console.log(line);
             //fs.append("/var/logs/nodehouse.log",line + "\n");
+            g.loglist.push(dateFormat(new Date(),"isoUtcDateTime") + " " + message);
+            g.logcount++
+            if (g.logcount > g.loglimit) {
+            	g.loglist.splice(0,1);
+            }
         }
     },
 
@@ -45,6 +56,29 @@ var g = {
     	var num = parseInt(id.substr(1));
     	return {'house': house, 'num': num };
 
+    },
+
+    curl: function (method, urlstr, datastr) {
+        // for a post, the url with be split from the data by a space
+        var parsed = url.parse(urlstr);
+        var headers = {};
+        method = method.toUpperCase();
+        headers["Accept"] = "*/*";
+        if (method == "POST") {
+            headers["Content-Type"] = "application/x-www-form-urlencoded";
+            headers["Content-Length"] = datastr.length;
+        }
+        var req = http.request({
+            hostname: parsed.hostname,
+            method: method,
+            headers: headers,
+            path: parsed.path,
+            port: parsed.port
+        });
+        if (method == "POST") {
+            req.write(datastr);
+            req.end();
+        }
     }
 };
 

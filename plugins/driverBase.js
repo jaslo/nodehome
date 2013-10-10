@@ -2,11 +2,12 @@
 var evactions = require("../evactions"),
 	g = require("../globals");
 
-var RETRIGGER = 2 * 1000; // 30 sec then retrigger OK
+var RETRIGGER = 3 * 1000; // 3 sec then retrigger OK
 
 function driverbase() {
 	var self = this;
     var states = {};
+    var lastidval = "";
 
     this.canTrigger = function (id,val) {
         var now = new Date().getTime();
@@ -15,12 +16,15 @@ function driverbase() {
             //g.log(g.LOG_TRACE,"cantrigger: set x10 " + id + " to " + val);
             return true;
         }
-        var since = now - states[id].last;
-        states[id].last = now;
-        if (since > RETRIGGER) {
-            g.log(g.LOG_TRACE,"retrigger x10 " + id + " to " + val);
-            return true;
-        }
+        if (lastidval == id + val) {
+	        var since = now - states[id].last;
+	        states[id].last = now;
+	        if (since > RETRIGGER) {
+	            g.log(g.LOG_TRACE,"retrigger x10 " + id + " to " + val);
+	            return true;
+	        }
+	    }
+	    lastidval = id + val;
         //g.log(g.LOG_VERBOSE,"x10 " + id + " already set to " + val);
         return false;
     }
@@ -54,7 +58,7 @@ function driverbase() {
 	this.notify = function(id, val) {
 		for (var idexp in g.subtbl) {
 			if (!g.subtbl.hasOwnProperty(idexp)) continue;
-			if (id.match(idexp)) {
+			if (id.match(idexp+"$")) {
 				if (g.subtbl[idexp][undefined]) {
                     g.subtbl[idexp][undefined].forEach(function(f) { f(id,val); });
                 }

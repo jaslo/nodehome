@@ -27,9 +27,11 @@ var speech = null;
 //speech = require("./speech/flitespeak.js");
 
 //speech = require("./speech/espeak.js");
+// available for windows
+
 
 // no cepstral except on rpi
-//speech = require("./speech/cepstral.js");
+speech = require("./speech/cepstral.js");
 
 
 	function getDeviceInfo(devname) {
@@ -154,9 +156,11 @@ var speech = null;
         }
         g.devicemap[a.name].latest = now;
         g.devicemap[a.name].state = a.value;
-        devinfo.driver.obj.publishEvent(devinfo.device.id, a.value);
-        if (toDevice)
+        
+        if (toDevice) {
+        	devinfo.driver.obj.publishEvent(devinfo.device.id, a.value);
 			devinfo.driver.obj.set(devinfo.device.id, a.value, a.parm);
+		}
 	}
 
 	// delay if present is already handled

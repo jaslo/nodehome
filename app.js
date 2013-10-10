@@ -119,6 +119,12 @@ app.post("/device", function(req,res) {
     });
 });
 
+app.get("/cmd/loglimit", function(req,res) {});
+
+app.get("/log", function(req,res) {
+	res.send(200,g.loglist);
+});
+
 //get devices
 app.get("/device", function(req,res) {
     if (req.name) {

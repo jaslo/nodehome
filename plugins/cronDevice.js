@@ -4,7 +4,7 @@
 //  3/15 means 3rd minute and every 15
 //  1-5 every weekday
 //  1,3,5 MWF
-//  0 8 * * 1,3,5 (mwf at 8am)
+//  0 0 8 * * 1,3,5 (mwf at 8am)
 //  * * * * #2 5  is second friday of every month
 // * * * * L 1 is last monday of every month
 
@@ -14,7 +14,8 @@ var cronjob = require("cron").CronJob;
 
 function cronDevice() {
 	this.subscribe = function(name, val, cb) {
-		new cronjob(val,cb,null,true);
+		var j1 = new cronjob(val,cb,null,true);
+		j1.start();
 	}
 
     this.driver = {

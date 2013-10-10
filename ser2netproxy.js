@@ -34,7 +34,9 @@ function ser2netproxy(netaddr) {
 
 	this.write = function (data, cb) {
         if (!client) {
-            cb();
+            if (cb) {
+            	cb();
+            }
             return;
         }
 		client.write(data, "ascii", function() {

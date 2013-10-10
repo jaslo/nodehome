@@ -55,6 +55,7 @@ function acrf() {
         var val = (data[2] & 0x20) ? "off" : "on";
 
         var id = house + unit;
+        g.log(g.LOG_VERBOSE, "acrf data " + id + val);
         if (self.canTrigger(id,val)) {
             self.publish(id,val);
         }

@@ -21,7 +21,7 @@ this.run = function(devid) {
     }
 
     if (vthis == backdoor) {
-        scriptlib.log("---- backdoor: vthis = b2 vlast = " + vlast);
+        scriptlib.log("---- backdoor: vthis = Back door vlast = " + vlast);
     }
     else if (vthis != kitchenmotion || vlast != kitchenmotion) {
         scriptlib.log("---- motion: vthis = " + vthis + " vlast = " + vlast);
@@ -35,6 +35,7 @@ this.run = function(devid) {
         scriptlib.scriptrun("countdown","countdown",59).then(function(nret) {
         	if (!nret) {
         		scriptlib.say("Alarm disabled. Welcome home.");
+        		scriptlib.scriptrun("pager","pagePushover","alarm code ok");
         	}
         	else {
         		scriptlib.say("Alarm triggered, security response engaged.");
@@ -53,16 +54,19 @@ this.run = function(devid) {
 //
  //   }
     else {
-    	var lastTime = scriptlib.deviceLatest(vlast);
+    	var lastTime = vlast ? scriptlib.deviceLatest(vlast) : null;
     	var nmin = 100;
     	if (lastTime) {
         	nmin = (new Date().getTime() - lastTime.getTime())/60000;
+        	scriptlib.log("time from last " + vlast + " is " + nmin + " minutes");
         }
         if (nmin < 2) { // 2 minutes
             if (vthis == kitchenmotion) {
                 if (vlast == backdoor) {
                     scriptlib.log("---- In door ----");
-                    runevent("Indoor");
+                    //runevent("Indoor");
+                    scriptlib.say("Welcome home");
+        			scriptlib.scriptrun("pager","pagePushover","home entry ok");
                     vnext = "";
                 }
             }

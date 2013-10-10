@@ -35,6 +35,10 @@ function scriptlib() {
 		return g.executeAction({do: 'speak', value: s},null);
 	}
 
+	this.curl = function(method, url, parms) {
+		return g.curl(method,url,parms);
+	}
+
 }
 
 module.exports = new scriptlib();
