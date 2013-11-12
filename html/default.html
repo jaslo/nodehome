@@ -60,7 +60,7 @@
             htmlstr += '</tbody></table>';
 
             $(evselector).append(htmlstr);
-            setTableSort("#eventTable");
+            setTableSort("#eventTable",4);
 
             //$('#eventTable').tablesorter();
 
@@ -154,9 +154,9 @@
                 '</tr>';
             });
             htmlstr += '</tbody></table>';
-
+            $(evselector).empty();
             $(evselector).append(htmlstr);
-            setTableSort("#deviceTable");
+            setTableSort("#deviceTable",6);
 
             //$('#deviceTable').tablesorter();
             $("#deviceTable td").click(function(e) {
@@ -167,6 +167,21 @@
                 var n = tr.index;
                 var rowName = $(tr.row.children()[0]).text();
                 console.log("clicked column " + n + "=" + rowName);
+                switch (n) {
+                	case 4: { // state
+                		var newstate;
+	                	var prev = $(tr.row.children()[4]).text();
+	                	if (prev == "off" || prev=="none") newstate = "on";
+	                	else if (prev == "on") newstate = "off";
+	                	if (newstate) {
+	                		$.get("/cmd/device?name="+rowName+"&value="+newstate)
+	                		.done(function() {
+	                			setTimeout(function() { getDeviceTable(evselector); },1000);
+	                		});
+	                	}
+	                	
+	                }
+                }
             });
         })
         .fail(function(jqXHR, textStatus, errorThrown) {

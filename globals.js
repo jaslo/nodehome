@@ -11,9 +11,11 @@ var g = {
     MongoHost: "localhost",
     htmlBase: path.join(__dirname,"/html"),
 
+    RemoteReceiverTimeout: 4000,
+
     loglist: [],
     logcount: 0,
-    loglimit: 500,
+    loglimit: 1000,
 
     LOG_VERBOSE: 10,
     LOG_DIAGNOSTIC: 9,
@@ -41,6 +43,30 @@ var g = {
             }
         }
     },
+
+    delayInMs: function(del) {
+		var n = parseInt(del);
+		var ms = 0;
+		if (del.indexOf(':') != -1) {
+	        // [hh:][mm:][ss][.ms]
+	        var parts = del.split(":");
+	        var total = parts[0] * 3600;
+	        if (parts.length > 1) {
+	        	total += parts[1] * 60;
+	        }
+	        if (parts.length > 2) {
+	        	total += parts[2];
+	        }
+	        return total * 1000;
+		}
+		else if (del.endsWith("sec")) {
+			ms = n * 1000;
+		}
+		else { // assume minutes
+			ms = n * 60 * 1000;
+		}
+		return ms;
+	},
 
     waitFor: function(millis) {
         var dfr = new Deferred();
@@ -84,6 +110,7 @@ var g = {
 
 g.drivermap = {};
 g.devicemap = {};
+g.deviceIdmap = {};
 g.eventmap = {};
 g.delayedactions = {};
 g.subtbl = {};

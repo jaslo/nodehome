@@ -55,6 +55,17 @@ function rcsx10b() {
         sendthermo(unitpreset.unit, unitpreset.preset);    
     }
 
+    function getSendSetpoint(unit,level) {
+    	var temp = null;
+    	switch(unit) {
+    		case 1: temp = 4 + level; break;
+    		case 2: temp = 36 + level;break;
+    		case 3: temp = 68 + level; break;
+    		case 9: temp = 100 + level; break;
+    	}
+    	return temp;
+    }
+
     this.createId = function(id) {
         var splits = initparm.split(",");
         var x10driver =  splits[0];
@@ -95,6 +106,10 @@ function rcsx10b() {
                 var cmdstr = "reporting ";
                 cmdstr += reporttypes[level];
                 g.log(g.LOG_TRACE,cmdstr);
+            }
+            if ((unit < 4) || (unit ==9) ) {
+            	temp = getSendSetpoint(unit,level);
+            	g.log(g.LOG_DIAGNOSTIC,"setpoint: " + temp);
             }
         });
     }

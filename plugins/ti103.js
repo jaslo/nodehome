@@ -43,9 +43,10 @@ function ti103() {
     var curhouse = '';
     var curunit = '';
 //    var states = {}; // current value by unit id
+	var statusTimer;
 
     function decodeStr(str) {
-        g.log(g.LOG_DIAGNOSTIC,"decode rx:" + str);
+        g.log(g.LOG_VERBOSE,"decode rx:" + str);
         var skipcheck = str.length - 3,
             val,
             house1,
@@ -98,9 +99,14 @@ function ti103() {
     }
 
     this.onData = function(data) {
+    	if (statusTimer) {
+    		clearTimeout(statusTimer);
+    		statusTimer = null;
+    	}
+
         inbuffer += data;
         if (inbuffer[inbuffer.length-1] == '#') {
-            var strs = inbuffer.split("$");
+            var strs = inbuffer.split(/[#\$]/);
             for (var sx = 0; sx < strs.length; sx++) {
 	    	  var str = strs[sx];
 
@@ -148,7 +154,11 @@ function ti103() {
     	to = null;
     	//g.log(g.LOG_DIAGNOSTIC,"send ti103 checkstatus");
     	self.sendser("$>2800008C#");
-        //setTimeout(checkStatusLoop,5000);
+    	if (!statusTimer) {
+	    	statusTimer = setTimeout(function() {
+	    		g.log(g.LOG_WARNING, "****** REMOTE RECIEVER STATUS TIMEOUT ****");
+	    	}, g.RemoteReceiverTimeout);
+	    }
     };
 
     /*
@@ -236,7 +246,7 @@ K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 
     this.sendcmd = function(str) {
         var cmdser = "$>28001" + str; 
         var hstr = addHash(cmdser);
-        g.log(g.LOG_DIAGNOSTIC,"send: " + hstr);
+        g.log(g.LOG_DEBUG,"actual send: " + str);
         self.sendser(hstr);
     }
 // handleinitialize by base class

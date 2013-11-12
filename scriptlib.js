@@ -3,6 +3,7 @@ var evactions = require("./evactions"),
 
 
 function scriptlib() {
+	var self = this;
 
 	// for scripts
 	this.variable = function(id) {
@@ -11,6 +12,10 @@ function scriptlib() {
 
 	
 	this.variableSet = function(id, val) {
+		return self.deviceAction(id,val);
+	}
+
+	this.deviceAction = function(id, val) {
 		return g.executeAction({do: 'device', name: id, value: val}, null);
 		//g.variableDriver.set(id,val);
 	}

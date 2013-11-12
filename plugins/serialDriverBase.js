@@ -13,15 +13,22 @@ function serialDriverBase() {
     driverBase.call(this);
 
     this.setDevice = function(basedev, baseparm, cb) {
+    	nodeser = null;
         if ((basedev[0] == '/') || basedev.startsWith("COM")) {
             nodeser = new serialport(basedev, baseparm, false);
         }
-        else if (basedev[0].match(/^[0-9]/)) {
+        else if (basedev[0].match(/[0-9]/)) {
             var ncolon = basedev.indexOf(':');
-            nodeser = new ser2netproxy({host: basedev.substring(0,ncolon), port:basedev.substring(ncolon+1)});
+            if (ncolon != -1) {
+            	console.log("try ser2net");
+            	nodeser = new ser2netproxy({host: basedev.substring(0,ncolon), port:basedev.substring(ncolon+1)});
+            }
         }
         if (!nodeser) {
-            console.log("failure to initialize device");
+            console.log("failure to initialize device " + self.driver.name);
+            nodeser = {
+            	'write': function(data) { return }
+            };
             return null;
         }
 
@@ -37,7 +44,8 @@ function serialDriverBase() {
     };
 
     this.sendser = function(data) {
-        nodeser.write(data);
+        if (nodeser)
+        	nodeser.write(data);
     };
 }
 

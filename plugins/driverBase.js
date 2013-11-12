@@ -1,5 +1,5 @@
 
-var evactions = require("../evactions"),
+var evactions = require("../evactions"), // setDriverDevice
 	g = require("../globals");
 
 var RETRIGGER = 3 * 1000; // 3 sec then retrigger OK
@@ -47,7 +47,7 @@ function driverbase() {
 
 	this.publish = function(id,val) {
 		val = val.toLowerCase()
-		evactions.setDriverDevice(self.driver.name, id,val);
+		evactions.setDriverDevice(self.driver.name, id,val); // (invoke device action, publish == false!)
 		this.notify(id,val);
 	}
 
@@ -63,7 +63,7 @@ function driverbase() {
                     g.subtbl[idexp][undefined].forEach(function(f) { f(id,val); });
                 }
 				if (g.subtbl[idexp][val]) {
-					g.subtbl[idexp][val].forEach(function(f) { f(id,val); });					
+					g.subtbl[idexp][val].forEach(function(f) { f(id,val); });
 				}
 			}
 		}

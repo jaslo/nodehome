@@ -127,7 +127,7 @@ this.events = [
 //////////////////////////////////////////
 
 { name: "hawkeye a14", trigger: "kitchen motion", value: "off", nolog: true, actions: [
-    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",3)'}
+    //{ do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",3)'}
 ]},
 
 { name: "unoccupied thermostat", nolog: false, actions: [

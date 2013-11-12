@@ -5,6 +5,7 @@ var http = require("http"),
     db = require("./data"),
     RedisStore = require('connect-redis')(express),
     sun = require('./plugins/sunInterface.js'),
+    scriptlib = require("./scriptlib"),
     g = require("./globals");
 
 var redis = require('redis').createClient();
@@ -154,11 +155,22 @@ app.get("/location",function(req,res) {
 app.post("/event", function(req,res) {
 });
 
+app.get("/cmd/device", function(req,res) {
+	var e = g.devicemap[req.query.name];
+	if (!e) {
+		console.log("device " + req.query.name + " not found");
+		res.send(404);
+	}
+	scriptlib.variableSet(req.query.name, req.query.value);
+	res.send(200);
+});
+
 // http://localhost:82/cmd/event?name=Lights%20out%20bedtime
 app.get("/cmd/event", function (req,res) {
     var e = g.eventmap[req.query.name];
     if (!e) {
         console.log("event " + req.query.name + " not found");
+        res.send(404);
         return;
     }
     g.runEventActions(e);

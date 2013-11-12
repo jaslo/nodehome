@@ -1,4 +1,4 @@
-var Deferred = require("JQDeferred"),
+var Q = require("q"),
 	http = require("http"),
 	app = require("./app"),
 	xpath = require("xpath"),
@@ -54,24 +54,6 @@ speech = require("./speech/cepstral.js");
 	   	return {driver: driverentry, 'device': device};
 	}
 
-	function checkEventActions(e) {
-		for (var i1 = 0; i1 < e.actions.length; i1++) {
-			var a = e.actions[i1];
-			if (a.delay) {
-				var ms = delayInMs(a.delay);
-				if (ms == 0) {
-					g.log(g.LOG_WARNING, "Event " + e.name + ", action " + i1 + " invalid delay");
-				}
-			}
-			if (a.do == 'device') {
-				getDeviceInfo(a.name);
-			}
-			else if (a.do == 'event') {
-				// too early to check these :(
-			}
-		}
-	}
-
 	// globally accessible to app.js
 	g.runEventActions = function(e) {
 		var dolog = !e || (!e.nolog);
@@ -81,8 +63,9 @@ speech = require("./speech/cepstral.js");
 		for (var i1 in e.actions) {
 			var a = e.actions[i1];
 			if (a.delay) {
-				var ms = delayInMs(a.delay);
+				var ms = g.delayInMs(a.delay);
 	            //TODO: track all the currently "delayed" actions
+                // persist these!!!!
 	            var da = g.delayedactions[a.name];
 	            if (da) {
 	                g.log(g.LOG_TRACE,"replacing delayed action " + a.name);
@@ -101,29 +84,7 @@ speech = require("./speech/cepstral.js");
 	}
 
 
-	function delayInMs(del) {
-		var n = parseInt(del);
-		var ms = 0;
-		if (del.indexOf(':') != -1) {
-	        // [hh:][mm:][ss][.ms]
-	        var parts = del.split(":");
-	        var total = parts[0] * 3600;
-	        if (parts.length > 1) {
-	        	total += parts[1] * 60;
-	        }
-	        if (parts.length > 2) {
-	        	total += parts[2];
-	        }
-	        return total * 1000;
-		}
-		else if (del.endsWith("sec")) {
-			ms = n * 1000;
-		}
-		else { // assume minutes
-			ms = n * 60 * 1000;
-		}
-		return ms;
-	}
+
 
 	function actionToText(a) {
 		var text = "";
@@ -156,9 +117,10 @@ speech = require("./speech/cepstral.js");
         }
         g.devicemap[a.name].latest = now;
         g.devicemap[a.name].state = a.value;
-        
+
         if (toDevice) {
         	devinfo.driver.obj.publishEvent(devinfo.device.id, a.value);
+        	g.log(g.LOG_DIAGNOSTIC, "set " + devinfo.device.id + " to " + a.value);
 			devinfo.driver.obj.set(devinfo.device.id, a.value, a.parm);
 		}
 	}
@@ -224,7 +186,7 @@ speech = require("./speech/cepstral.js");
 		var dev = _.find(g.devicemap, function(value, key, list) {
 			return ((value.driver == drivername) && (value.id == id));
 		});
-		
+
 		if (dev) {
 			self.DeviceAction({do: 'device', name: dev.name, value: val}, false);
 		}
@@ -268,35 +230,44 @@ speech = require("./speech/cepstral.js");
 		//devicemap[name] = name:,location,driver,id,group,latest
 
 		g.log(g.LOG_TRACE,"loading devices");
-		db.loadDevices();
+		db.loadDevices().then(function(err,devices) {
+			for (var i = 0; i < devices.length; i++) {
+				var data = devices[i];
+				// save the ids of the devices
+				g.devicemap[data.name] = data;
+				g.deviceIdmap[data._id] = data;
+			}
+		});
 
 		g.log(g.LOG_TRACE,"loading events");
 		//TODO: add event fields for disabled/logged
 		// read events, do all subscribes
 		//eventmap[e.name] = {name,trigger,value, actions[]}
 		// action = { do, name, value, parm, delay, text}
-		for (var i in db.events) {
-		    var e = db.events[i];
-		    checkEventActions(e);
-		    for (var ai in e.actions) {
-		        e.actions[ai].text = actionToText(e.actions[ai]);
-		    }
-		    g.eventmap[e.name] = e;
-		    var devname = e.trigger;
-		    if (devname && devname != "none") {
-		        var devinfo = getDeviceInfo(devname);
-		        if (!devinfo.driver) {
-		            g.log(g.LOG_TRACE,"Error on event " + e.name + ". No device " + devname + ".");
-		        }
-		        else {
-		            devinfo.driver.obj.subscribe(devinfo.device.id,e.value, (function(e) {
-			            return function() {
-			                g.runEventActions(e);
-			            }
-		        	})(e));
-		        }
-		    }
-		}
+		db.loadEvents().then(function(err,events) {
+			for (var i = 0; i < events.length; i++) {
+				var e = events[i];
+			    checkEventActions(e);
+			    for (var ai in e.actions) {
+			        e.actions[ai].text = actionToText(e.actions[ai]);
+			    }
+			    g.eventmap[e.name] = e;
+			    var devname = e.trigger;
+			    if (devname && devname != "none") {
+			        var devinfo = getDeviceInfo(devname);
+			        if (!devinfo.driver) {
+			            g.log(g.LOG_TRACE,"Error on event " + e.name + ". No device " + devname + ".");
+			        }
+			        else {
+			            devinfo.driver.obj.subscribe(devinfo.device.id,e.value, (function(e) {
+				            return function() {
+				                g.runEventActions(e);
+				            }
+			        	})(e));
+			        }
+			    }
+			}
+		});
 	}
 }
 

@@ -410,10 +410,32 @@ $.tablesorter.defaults =  {      // *** APPEARANCE ***
 
 */
 
-function setTableSort(elem) {
+$.tablesorter.addParser({ 
+        // set a unique id 
+        id: 'mydates', 
+        is: function(s) { 
+            // return false so this parser is not auto detected 
+            return false; 
+        }, 
+        format: function(s) { 
+            // format your data for normalization 
+            if (s == "never") return 1902560364000;
+            else return Date.parse(s);
+        }, 
+        // set type, either numeric or text 
+        type: 'numeric' 
+    }); 
+
+function setTableSort(elem, datecol) {
     var parms = $.extend({ initialized: function (table) {
 //        $(table).trigger('applyWidgets');
 //        $(table).trigger('applyWidgetId', ['zebra']);
+ 
+            headers: { 
+                datecol: { 
+                    sorter:'mydates' 
+                } 
+            } 
     }},defaults);
     $(elem).tablesorter(parms);
     //$('#eventTable').trigger('applyWidgets')

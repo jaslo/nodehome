@@ -1,5 +1,7 @@
 var http = require("http");
-var citytimes = require("../cities.js")
+var citytimes = require("../cities.js"),
+	g = require("../globals.js");
+
 function SunInterface() {
     var self = this;
 	// get locale and sunrise/sunset times
@@ -185,6 +187,7 @@ function SunInterface() {
     var tset;
 
     function waitForRise() {
+    	g.log(g.LOG_DIAGNOSTIC, "wait " + (trise-new Date()) + " for sunrise: " + new Date(trise));
         self.location.rise = trise;
         setTimeout(function () {
         	for (r in risers) {
@@ -197,6 +200,7 @@ function SunInterface() {
     }
 
     function waitForSet() {
+    	g.log(g.LOG_DIAGNOSTIC, "wait " + (tset-new Date()) + " for sunset: " + new Date(tset) );
         self.location.set = tset;
         setTimeout(function() {
         	for (s in setters) {

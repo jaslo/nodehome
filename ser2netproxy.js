@@ -27,6 +27,7 @@ function ser2netproxy(netaddr) {
             });
         }
         catch(e) {
+        	g.log(g.LOG_ERROR,"exception in ser2net proxy: " + e);
             client = null;
         }
         cb();
