@@ -75,7 +75,13 @@
                 console.log("clicked column " + n + "=" + rowName);
                 if (n != -1) {
                     switch (n) {
-                        case 0: console.log("run"); break;
+                        case 0: console.log("run");
+                        $.get("/cmd/event?name="+rowName)
+	                		.done(function() {
+	                			setTimeout(function() { getEventTable(evselector); },1000);
+	                		});
+
+                        break;
                         case 1: console.log("edit"); break;
                         case 2: console.log("trigger"); break;
                         case 3: console.log("actions"); break;

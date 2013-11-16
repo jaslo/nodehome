@@ -157,6 +157,8 @@ function ti103() {
     	if (!statusTimer) {
 	    	statusTimer = setTimeout(function() {
 	    		g.log(g.LOG_WARNING, "****** REMOTE RECIEVER STATUS TIMEOUT ****");
+	    		statusTimer = null;
+	    		checkStatusLoop();
 	    	}, g.RemoteReceiverTimeout);
 	    }
     };

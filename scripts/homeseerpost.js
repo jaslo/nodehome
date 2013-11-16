@@ -16,15 +16,23 @@ function homeseerpost() {
         var headers = {};
         headers["Content-Type"] = "application/x-www-form-urlencoded";
         headers["Content-Length"] = data.length;
-        var req = http.request({
-            hostname: parsed.hostname,
-            method: "POST",
-            headers: headers,
-            path: parsed.path,
-            port: parsed.port
-        });
-        req.write(data + "\n");
-        req.end();
+        try {
+	        var req = http.request({
+	            hostname: parsed.hostname,
+	            method: "POST",
+	            headers: headers,
+	            path: parsed.path,
+	            port: parsed.port
+	        });
+	        req.on('error', function(e) {
+			  console.log('problem with request: ' + e.message);
+			});
+	        req.write(data + "\n");
+	        req.end();
+	    }
+	    catch(e) {
+
+	    }
     }
 
 }

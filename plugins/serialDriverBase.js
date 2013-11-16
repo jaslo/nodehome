@@ -32,15 +32,26 @@ function serialDriverBase() {
             return null;
         }
 
-        nodeser.open(function() {
-            nodeser.on('data', function(data) {
-                // wait until last byte is '#' ?
-                self.onData(data);
-            });
-            // opened, can now start reading and writing
-            if (cb)
-                cb();
-        });
+        try {
+        	nodeser.on('error', function() {
+        		console.log("nodser emitted error");
+        		nodeser = {
+	            	'write': function(data) { return }
+	            };
+        	});
+	        nodeser.open(function() {
+	            nodeser.on('data', function(data) {
+	                // wait until last byte is '#' ?
+	                self.onData(data);
+	            });
+	            // opened, can now start reading and writing
+	            if (cb)
+	                cb();
+	        });
+	    }
+	    catch (e) {
+	    	console.log("failure opening serial device: " + basedev);
+	    }
     };
 
     this.sendser = function(data) {

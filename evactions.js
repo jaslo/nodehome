@@ -158,6 +158,24 @@ speech = require("./speech/cepstral.js");
 		}
 	}
 
+	function checkEventActions(e) {
+		for (var i1 = 0; i1 < e.actions.length; i1++) {
+			var a = e.actions[i1];
+			if (a.delay) {
+				var ms = g.delayInMs(a.delay);
+				if (ms == 0) {
+					g.log(g.LOG_WARNING, "Event " + e.name + ", action " + i1 + " invalid delay");
+				}
+			}
+			if (a.do == 'device') {
+				getDeviceInfo(a.name);
+			}
+			else if (a.do == 'event') {
+				// too early to check these :(
+			}
+		}
+	}
+
 	function loadPlugin(p,path) {
 	    if (p.endsWith(".js")) {
 	    	var d1;
@@ -230,44 +248,50 @@ speech = require("./speech/cepstral.js");
 		//devicemap[name] = name:,location,driver,id,group,latest
 
 		g.log(g.LOG_TRACE,"loading devices");
-		db.loadDevices().then(function(err,devices) {
+		var dfr = Q.defer();
+
+		db.loadDevices().then(function(devices) {
 			for (var i = 0; i < devices.length; i++) {
 				var data = devices[i];
 				// save the ids of the devices
 				g.devicemap[data.name] = data;
 				g.deviceIdmap[data._id] = data;
 			}
-		});
+		})
+		.then(function() {
 
-		g.log(g.LOG_TRACE,"loading events");
-		//TODO: add event fields for disabled/logged
-		// read events, do all subscribes
-		//eventmap[e.name] = {name,trigger,value, actions[]}
-		// action = { do, name, value, parm, delay, text}
-		db.loadEvents().then(function(err,events) {
-			for (var i = 0; i < events.length; i++) {
-				var e = events[i];
-			    checkEventActions(e);
-			    for (var ai in e.actions) {
-			        e.actions[ai].text = actionToText(e.actions[ai]);
-			    }
-			    g.eventmap[e.name] = e;
-			    var devname = e.trigger;
-			    if (devname && devname != "none") {
-			        var devinfo = getDeviceInfo(devname);
-			        if (!devinfo.driver) {
-			            g.log(g.LOG_TRACE,"Error on event " + e.name + ". No device " + devname + ".");
-			        }
-			        else {
-			            devinfo.driver.obj.subscribe(devinfo.device.id,e.value, (function(e) {
-				            return function() {
-				                g.runEventActions(e);
-				            }
-			        	})(e));
-			        }
-			    }
-			}
+			g.log(g.LOG_TRACE,"loading events");
+			//TODO: add event fields for disabled/logged
+			// read events, do all subscribes
+			//eventmap[e.name] = {name,trigger,value, actions[]}
+			// action = { do, name, value, parm, delay, text}
+			db.loadEvents().then(function(events) {
+				for (var i = 0; i < events.length; i++) {
+					var e = events[i];
+				    checkEventActions(e);
+				    for (var ai in e.actions) {
+				        e.actions[ai].text = actionToText(e.actions[ai]);
+				    }
+				    g.eventmap[e.name] = e;
+				    var devname = e.trigger;
+				    if (devname && devname != "none") {
+				        var devinfo = getDeviceInfo(devname);
+				        if (!devinfo.driver) {
+				            g.log(g.LOG_TRACE,"Error on event " + e.name + ". No device " + devname + ".");
+				        }
+				        else {
+				            devinfo.driver.obj.subscribe(devinfo.device.id,e.value, (function(e) {
+					            return function() {
+					                g.runEventActions(e);
+					            }
+				        	})(e));
+				        }
+				    }
+				}
+				dfr.resolve();
+			});
 		});
+		return dfr.promise;
 	}
 }
 

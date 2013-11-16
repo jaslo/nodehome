@@ -1,5 +1,6 @@
 
 var g = require("./globals");
+var Q = require("q");
 
 function db() {
 var self = this;
@@ -9,9 +10,13 @@ this.loadDevices = function() {
 		var d = self.devices[i];
         d.state = "none";
         if (!d.id) d.id = d.name;
-		g.devicemap[d.name] = d;
 	}
+	return Q(self.devices);
 };
+
+this.loadEvents = function() {
+	return Q(self.events);
+}
 
 g.ti103initialize = "192.168.0.143:2001"; // 9600
 //    ti103init: '/dev/ttyUSB0,{ "baudrate": 9600 }',
@@ -239,8 +244,8 @@ this.events = [
 ]},
 
 { name: "security ligts off dawn", trigger: "sun", value:"rise", actions:[
-	{do: "device", name: "Rock Light", value: "off", delay: "1:00:00"},
-	{do: "device", name: "porch lights", value: "off", delay: "1:00:00"}
+	{do: "device", name: "Rock Light", value: "off", delay: "1:00"},
+	{do: "device", name: "porch lights", value: "off", delay: "1:00"}
 ]},
 
 
