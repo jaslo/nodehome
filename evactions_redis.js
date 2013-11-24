@@ -192,45 +192,65 @@ var speech = null;
 			for (var j in g.drivermap) {
 				var d1 =  g.drivermap[j].obj;
 				var p = g[d1.driver.name + method];
+				var parm;
 				if (p && typeof(d1[method]) == "function")  {
-					d1[method](p);
+					if (typeof(p) == "function") {
+						parm = p();
+					}
+					else parm = p;
+					d1[method](parm);
 				}
 			}
 		}
 
 
 		// start the redis db and events and devices
-		db.init();
-		db.loadDevices()
-		.done(function(devs) {
-		    db.loadEvents()
-		    .then(function(events) {
-				for (var i = 0; i < events.length; i++) {
-					db.event(events[i])
-					.then(function(e) {
-					    //checkEventActions(e);
-						for (var j = 0; j < e.actionslength; j++) {
-							db.action(e,j).then(function(a) {
-					        	a.text = actionToText(a);
-					        	db.saveAction(e,j);
-					        });
-					    }
-					    return e;
-					})
-					.then(function(e) {
-						db.device(e.trigger)
-						.then(function(dev) {
-							driverentry = g.drivermap[dev.driver];
-							driverentry.obj.subscribe(dev.id,e.value, (function(e) {
-								return function() {
-									g.runEventActions(e.name);
-								}
-							})(e));
-						})
-					})
-				}
-			})
+		var d1 = Q.defer();
+
+		db.init()
+		.then(function() {
+			db.loadDevices()
+			.done(function(devs) {
+			    db.loadEvents()
+			    .then(function(events) {
+			    	var plist = [];
+					for (var i = 0; i < events.length; i++) {
+						var eq = Q.defer();
+						plist.push(eq);
+						(function(eq) {
+							db.event(events[i])
+							.then(function(e) {
+							    //checkEventActions(e);
+								for (var j = 0; j < e.actionslength; j++) {
+									db.action(e,j).then(function(a) {
+							        	a.text = actionToText(a);
+							        	db.saveAction(e,j);
+							        });
+							    }
+							    return e;
+							})
+							.then(function(e) {
+								db.device(e.trigger)
+								.then(function(dev) {
+									driverentry = g.drivermap[dev.driver];
+									driverentry.obj.subscribe(dev.id,e.value, (function(e) {
+										return function() {
+											g.runEventActions(e.name);
+										}
+									})(e));
+								})
+							})
+							.then(function(e) {
+								eq.resolve();
+							})
+						}(eq)); // closure
+
+					} //rof
+					Q.all(plist).then(function () { d1.resolve(); });
+				});
+			});
 		});
+		return d1.promise;
 	}
 }
 

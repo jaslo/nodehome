@@ -17,9 +17,12 @@ g.keypadinitialize1 = "ti103,H";
 function db() {
     var self = this;
     var client;
+    var initdfr = Q.defer();
 
     function connected() {
     	console.log("got connection");
+    	setBindings();
+    	initdfr.resolve();
     }
   
 
@@ -27,7 +30,7 @@ function db() {
         client = redis.createClient();
         client.config("set","appendonly","yes");
         client.on("connect",connected);
-        setBindings();
+        return initdfr.promise;
     }
 
 
@@ -380,6 +383,19 @@ function db() {
     { name: "Evening Lights Out", trigger: "cron", value:"0 0 20 * * *", actions:[
         {do: "device", name: "Tiffany Lamp", value: "off", delay: "2:00"},
     ]},
+
+	{ name: "Night Thermo Unoccupied", trigger: "cron", value:"0 0 0 * * *", actions:[
+		{do: "event", name: "Heat unoccupied"}
+	//	{do: "event", name: "Cool unoccupied"}
+	]},
+
+	{ name: "Heat unoccuped", actions:[
+		{do: "device", name: "thermo", value: "heatpoint", parm: 62}
+	]},
+
+	{ name: "Cool unoccuped", actions:[
+		{do: "device", name: "thermo", value: "coolpoint", parm: 80}
+	]},
 
     { name: "security ligts off dawn", trigger: "sun", value:"rise", actions:[
         {do: "device", name: "Rock Light", value: "off", delay: "1:00:00"},

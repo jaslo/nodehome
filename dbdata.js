@@ -1,5 +1,6 @@
 
 var g = require("./globals");
+var os = require("os");
 var Q = require("q");
 
 function db() {
@@ -18,11 +19,13 @@ this.loadEvents = function() {
 	return Q(self.events);
 }
 
-g.ti103initialize = "192.168.0.143:2001"; // 9600
+g.ti103initialize = function() { return "192.168.0.143:2001"; }; // 9600
 //    ti103init: '/dev/ttyUSB0,{ "baudrate": 9600 }',
 //    acrf2init: "/dev/nul",
-g.acrfinitialize = '/dev/ttyUSB0,{ "baudrate": 4800 }';
-//g.acrfinitialize = 'COM7,{ "baudrate": 4800 }';
+g.acrfinitialize = function() {
+	if (os.type().toLowerCase() == 'linux') return '/dev/ttyUSB0,{ "baudrate": 4800 }';
+	else return 'COM7,{ "baudrate": 4800 }';
+}
 
 // these are numbered to run after the "base interface" initialization above
 
@@ -241,6 +244,19 @@ this.events = [
 
 { name: "Evening Lights Out", trigger: "cron", value:"0 0 20 * * *", actions:[
 	{do: "device", name: "Tiffany Lamp", value: "off", delay: "2:00"},
+]},
+
+{ name: "Night Thermo Unoccupied", trigger: "cron", value:"0 0 0 * * *", actions:[
+	{do: "event", name: "Heat unoccupied"}
+//	{do: "event", name: "Cool unoccupied"}
+]},
+
+{ name: "Heat unoccupied", actions:[
+	{do: "device", name: "thermo", value: "heatpoint", parm: 62}
+]},
+
+{ name: "Cool unoccuped", actions:[
+	{do: "device", name: "thermo", value: "coolpoint", parm: 80}
 ]},
 
 { name: "security ligts off dawn", trigger: "sun", value:"rise", actions:[

@@ -264,28 +264,22 @@ K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 K04K04 OPR0OPR0 
     	var cmd2;
         if (value.startsWith("PR")) {
             cmd2 = value;
+            self.sendcmd(house+dev);
+            cmd2 = cmd2.substring(4,5) + cmd2.substring(0,3);
+            self.sendcmd(house+dev+ ' ' + cmd2 + cmd2);
+            return;
         }
-        else {
-        	switch (value) {
-        		case 'on': cmd2 = 'ON'; break;
-        		case 'off': cmd2 = 'OFF'; break;
-        		case 'dim': cmd2 = 'DIM'; break;
-        		case 'bright': cmd2 = 'BGT'; break;
-        	}
-        }
+    	switch (value) {
+    		case 'on': cmd2 = 'ON'; break;
+    		case 'off': cmd2 = 'OFF'; break;
+    		case 'dim': cmd2 = 'DIM'; break;
+    		case 'bright': cmd2 = 'BGT'; break;
+    	}
 
         // store the current states of ids
         if (self.canTrigger(id,cmd2)) {
-        	//TODO: should publish?
-            if (cmd2.startsWith("PR")) {
-                self.sendcmd(house+dev);
-                cmd2 = cmd2.substring(4,5) + cmd2.substring(0,3);
-                self.sendcmd(house+dev+ ' ' + cmd2 + cmd2);
-            }
-            else {
-                self.sendcmd(house + dev + house + dev + ' ' + house + cmd2 + house + cmd2);
-            }
-        }
+	        self.sendcmd(house + dev + house + dev + ' ' + house + cmd2 + house + cmd2);
+       }
     };
 
     // event trigger "value" is action "cmd"

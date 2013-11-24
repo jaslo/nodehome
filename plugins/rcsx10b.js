@@ -168,18 +168,19 @@ function rcsx10b() {
         else if (val == 'coolpoint') {
             // unit code, level
 	    	//sendthermo(7,13);
+	    	sendthermo(4,3);
             sendttemp(param)
         }
         else if (val == 'heatpoint') {
-            //sendthermo(7,12)
-          	sendttemp(param)
+            sendthermo(4,2);
+          	sendttemp(param);
         }
     }
 
 	this.driver = {
 		name: 'rcsx10b',
 		idtype: 'thermostat',
-		values:['heatpoint', 'coolpoint', 'heatmode', 'coolmode','automode'],
+		values:['heatpoint', 'coolpoint'],
 
 		events:['temp']
     };

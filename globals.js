@@ -4,9 +4,19 @@ var path = require("path"),
     Deferred = require("JQDeferred"),
     url = require("url"),
     http = require("http"),
+    os = require("os"),
     dateFormat = require("dateformat");
 
+
+String.prototype.startsWith = function(str) {
+	return this.substr(0,str.length) == str;
+}
+
+
 dateFormat.masks.logTime = 'HH:MM:ss.l';
+var ostype = os.type().toLowerCase();
+ostype.startsWith("windows")
+ostype.startsWith("linux")
 var g = {
     MongoHost: "localhost",
     htmlBase: path.join(__dirname,"/html"),

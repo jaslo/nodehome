@@ -225,15 +225,19 @@ speech = require("./speech/cepstral.js");
 
 		g.variableDriver = loadPlugin("variables.js","./");
 
-
-
 		for (var i = 0; i < 10; i++) {
 			var method = "initialize" + (i > 0 ? i : "");
 			for (var j in g.drivermap) {
 				var d1 =  g.drivermap[j].obj;
 				var p = g[d1.driver.name + method];
+				var parm = null;;
 				if (p && typeof(d1[method]) == "function")  {
-					d1[method](p);
+					if (typeof(p) == "function") {
+						parm = p();
+					}
+					else parm = p;
+                    g.log(g.LOG_TRACE,"initialize " + d1.driver.name + " with " + parm);
+					d1[method](parm);
 				}
 			}
 		}

@@ -14,18 +14,19 @@ function serialDriverBase() {
 
     this.setDevice = function(basedev, baseparm, cb) {
     	nodeser = null;
+    	g.log(g.LOG_TRACE,"set serial device: " + basedev);
         if ((basedev[0] == '/') || basedev.startsWith("COM")) {
             nodeser = new serialport(basedev, baseparm, false);
         }
         else if (basedev[0].match(/[0-9]/)) {
             var ncolon = basedev.indexOf(':');
             if (ncolon != -1) {
-            	console.log("try ser2net");
+            	g.log(g.LOG_DIAGNOSTIC,"try ser2net");
             	nodeser = new ser2netproxy({host: basedev.substring(0,ncolon), port:basedev.substring(ncolon+1)});
             }
         }
         if (!nodeser) {
-            console.log("failure to initialize device " + self.driver.name);
+            g.log(g.LOG_ERROR, "failure to initialize device " + self.driver.name);
             nodeser = {
             	'write': function(data) { return }
             };
@@ -34,7 +35,7 @@ function serialDriverBase() {
 
         try {
         	nodeser.on('error', function() {
-        		console.log("nodser emitted error");
+        		g.log(g.LOG_ERROR,"nodser emitted error");
         		nodeser = {
 	            	'write': function(data) { return }
 	            };
