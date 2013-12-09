@@ -211,11 +211,11 @@ function db() {
 
         { name: 'xmas tree', location: 'outside', group:'lights', driver:'ti103',id:'C3'},
         { name: 'flourescents', location: 'kitchen', group:'lights', driver:'ti103',id:'H6'},
-        { name: 'porch lights', location: 'outside', group:'lights', driver:'ti103',id:'D7'},
+        { name: 'porch lights', location: 'porch', group:'lights', driver:'ti103',id:'D7'},
         { name: 'Floor Lamp', location: 'downstairs', group:'lights', driver:'ti103',id:'D10'},
         { name: 'Driveway Lights Motion', location: 'outside', group:'lights', driver:'ti103',id:'E2'},
 
-        { name: 'Front Door', location: 'outside', group:'motion', driver:'ti103',id:'B6'},
+        { name: 'Front Door', location: 'porch', group:'motion', driver:'ti103',id:'B6'},
         { name: 'Back Doorbell', location: 'outside', group:'motion', driver:'ti103',id:'B8'},
 
         { name: 'Back door', location: 'kitchen', group: 'motion', driver: 'ti103', id: 'B2'},

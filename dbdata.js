@@ -73,11 +73,11 @@ this.devices = [
 
 	{ name: 'xmas tree', location: 'outside', group:'lights', driver:'ti103',id:'C3'},
     { name: 'flourescents', location: 'kitchen', group:'lights', driver:'ti103',id:'H6'},
-    { name: 'porch lights', location: 'outside', group:'lights', driver:'ti103',id:'D7'},
+    { name: 'porch lights', location: 'porch', group:'lights', driver:'ti103',id:'D7'},
     { name: 'Floor Lamp', location: 'downstairs', group:'lights', driver:'ti103',id:'D10'},
     { name: 'Driveway Lights Motion', location: 'outside', group:'lights', driver:'ti103',id:'E2'},
 
-    { name: 'Front Door', location: 'outside', group:'motion', driver:'ti103',id:'B6'},
+    { name: 'Front Door', location: 'porch', group:'motion', driver:'ti103',id:'B6'},
     { name: 'Back Doorbell', location: 'outside', group:'motion', driver:'ti103',id:'B8'},
 
     { name: 'Back door', location: 'kitchen', group: 'motion', driver: 'ti103', id: 'B2'},
@@ -134,20 +134,29 @@ this.events = [
 
 //////////////////////////////////////////
 
-{ name: "hawkeye a14", trigger: "kitchen motion", value: "off", nolog: true, actions: [
+{ name: "kitchen motion", trigger: "kitchen motion", value: "off", nolog: true, actions: [
+    {do: "script", name: "backdoor", value:"run", parm: "kitchen motion"},
+
     //{ do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",3)'}
 ]},
-
+/*
 { name: "unoccupied thermostat", nolog: false, actions: [
 	{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("unoccupied thermostat")'}
 	//{ do: "device", name: "homeseerpost", value: 'TriggerEvent("unoccupied thermostat")'}
 ]},
+*/
+
 { name: "all xmas lights off", actions: [
     { do: "device", name: "xmas tree", value: 'off'}
 ]},
 
 { name: "remote h5", trigger: 'rfcontroller 5', value:"off", actions: [
     { do: "device", name: "xmas tree", value: 'off'}
+//    { do: "device", name: "homeseerpost", value: 'TriggerEvent("all xmas lights off")'}
+]},
+
+{ name: "remote h5 on", trigger: 'rfcontroller 5', value:"on", actions: [
+    { do: "device", name: "xmas tree", value: 'on'}
 //    { do: "device", name: "homeseerpost", value: 'TriggerEvent("all xmas lights off")'}
 ]},
 //{ name: "remote h6", trigger: 'rfcontroller 6', value:"off", actions: [
@@ -162,8 +171,8 @@ this.events = [
 	{ do: "event", name: "unoccupied thermostat"}
 ]},
 { name: "Upstairs lights out", actions: [
-	{ do: "device", name: "Tiffany Lamp", value: 'off'},
-	{ do: "device", name: "porch lights", value: 'off'},
+	{ do: "device", name: "Tiffany Lamp", value: 'off'}
+//	{ do: "device", name: "porch lights", value: 'off'},
 ]},
 { name: "remote h7", trigger: 'rfcontroller 7', value:"off", actions: [
     { do: "event", name: "Lights out bedtime"}

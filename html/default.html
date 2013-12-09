@@ -214,6 +214,14 @@
 
     }
 
+    function setHeat() {
+    	$.get("/cmd/device?name=thermo&value=heatpoint&parm=" + $("heatval").value);
+    }
+
+    function setCool() {
+    	$.get("/cmd/device?name=thermo&value=coolpoint&parm=" + $("coolval").value);
+    }
+
     var curtab;
     var curPanel;
 
@@ -262,12 +270,19 @@
     <ul>
         <li><a href="#tabs-1">Devices</a></li>
         <li><a href="#tabs-2">Events</a></li>
+        <li><a href="#tabs-thermo">Thermostat</a></li>
         <li><a href="#tabs-x">Edit</a></li>
         <li><a href="#tabs-3">Log</a></li>
     </ul>
     <div id="tabs-x">
         <a href="#" onclick="editDialog('#deviceDialog')">Add Device</a>
         <a href="#" onclick="editDialog('#eventDialog')">Add Event</a>
+    </div>
+    <div id="tabs-thermo">
+    	// {do: "device", name: "thermo", value: "heatpoint", parm: 62}
+    	<a href="#" onclick="setHeat"><input id="heatval">
+    	<br/>
+    	<a href="#" onclick="setCool"><input id="coolval">
     </div>
     <div id="tabs-1">
     </div>

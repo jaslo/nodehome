@@ -2,6 +2,7 @@
 var util = require("util");
 var events = require("events");
 var net = require("net");
+var g = require("./globals");
 
 
 function ser2netproxy(netaddr) {
@@ -19,11 +20,15 @@ function ser2netproxy(netaddr) {
             client.on('data', function(data) {
                 self.emit('data',data);
             });
-            client.on('error', function() {
+            client.on('error', function(e) {
+	        	g.log(g.LOG_ERROR,"ser2net got client error: " + e);
                 client = null;
             });
             client.on('close', function() {
+	        	g.log(g.LOG_ERROR,"ser2net got close");
+	        	client.removeAllListeners();
                 client = null;
+	        	self.open(cb);
             });
         }
         catch(e) {
@@ -35,6 +40,7 @@ function ser2netproxy(netaddr) {
 
 	this.write = function (data, cb) {
         if (!client) {
+        	g.log(g.LOG_ERROR,"ser2net null client write");
             if (cb) {
             	cb();
             }

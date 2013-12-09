@@ -74,12 +74,12 @@ speech = require("./speech/cepstral.js");
 				var to = setTimeout((function(a) {
 					return function() {
 	                    delete g.delayedactions[a.name];
-	                    g.executeAction(a, e);
+	                    g.executeAction(a, !e.nolog);
 	                };
 				})(a), ms);
 	            g.delayedactions[a.name] = {act: a, timeout: to};
 			}
-			else g.executeAction(a, e);
+			else g.executeAction(a, !e.nolog);
 		}
 	}
 
@@ -126,8 +126,7 @@ speech = require("./speech/cepstral.js");
 	}
 
 	// delay if present is already handled
-	g.executeAction = function(a,e) {
-		var dolog = !e || (!e.nolog);
+	g.executeAction = function(a,dolog) {
 		if (dolog) g.log(g.LOG_TRACE,"action=>" + actionToText(a));
 		switch (a.do) {
 			case 'device':

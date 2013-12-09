@@ -161,7 +161,7 @@ app.get("/cmd/device", function(req,res) {
 		console.log("device " + req.query.name + " not found");
 		res.send(404);
 	}
-	scriptlib.variableSet(req.query.name, req.query.value);
+	scriptlib.variableSetParm(req.query.name, req.query.value,req.query.parm);
 	res.send(200);
 });
 

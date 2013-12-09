@@ -10,6 +10,8 @@ this.run = function(devid) {
 
     var vthis = devid;
     var vlast = scriptlib.variable("devlast");
+    var lasttime = null;
+    if (vlast) lasttime = scriptlib.deviceLatest(vlast);
     scriptlib.variableSet("devlast", vthis);
     var vnext = vthis;
 
@@ -54,10 +56,10 @@ this.run = function(devid) {
 //
  //   }
     else {
-    	var lastTime = vlast ? scriptlib.deviceLatest(vlast) : null;
     	var nmin = 100;
-    	if (lastTime) {
-        	nmin = (new Date().getTime() - lastTime.getTime())/60000;
+    	if (lasttime) {
+        	var nsec = (new Date().getTime() - lasttime.getTime())/1000;
+        	nmin = Math.floor(nsec / 60);
         	scriptlib.log("time from last " + vlast + " is " + nmin + " minutes");
         }
         if (nmin < 2) { // 2 minutes

@@ -140,9 +140,9 @@ function ti103() {
                 }
             }
             inbuffer = "";
-	        if (!to)
-	        	to = setTimeout(checkStatusLoop,2000);
 	    }
+        if (!to)
+	       	to = setTimeout(checkStatusLoop,2000);
     };
 
     // $>28001A03A03 AONAON81#

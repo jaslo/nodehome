@@ -37,7 +37,10 @@ function serialDriverBase() {
         	nodeser.on('error', function() {
         		g.log(g.LOG_ERROR,"nodser emitted error");
         		nodeser = {
-	            	'write': function(data) { return }
+	            	'write': function(data) { 
+	            		g.log(g.LOG_WARNING, "write to dummy serial device");
+	            		return;
+	            	 }
 	            };
         	});
 	        nodeser.open(function() {
