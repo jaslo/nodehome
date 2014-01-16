@@ -56,8 +56,9 @@ speech = require("./speech/cepstral.js");
 
 	// globally accessible to app.js
 	g.runEventActions = function(e) {
-		var dolog = !e || (!e.nolog);
-		if (dolog) g.log(g.LOG_TRACE,"event=>" + e.name);
+		if (!e) return;
+		var dolog = !e.nolog;
+		if (dolog && e.name) g.log(g.LOG_TRACE,"event=>" + e.name);
 	    e.latest = new Date();
 		// run the event actions
 		for (var i1 in e.actions) {
@@ -67,7 +68,9 @@ speech = require("./speech/cepstral.js");
 	            //TODO: track all the currently "delayed" actions
                 // persist these!!!!
 	            var da = g.delayedactions[a.name];
-	            if (da) {
+	            g.log(g.LOG_TRACE,"delay " + a.name + " " + a.value +
+	            	" for " + ms/1000 + " seconds");
+	            if (da && (da.act.name === a.name) && (da.act.value === a.value)) {
 	                g.log(g.LOG_TRACE,"replacing delayed action " + a.name);
 	                clearTimeout(da.timeout);
 	            }

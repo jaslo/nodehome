@@ -176,6 +176,7 @@ app.get("/cmd/event", function (req,res) {
     g.runEventActions(e);
     // /cmd/event?name=driveway
     // /cmd/device?name=doorbell&val=on
+	res.send(200);
 });
 
 

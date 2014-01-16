@@ -44,7 +44,7 @@ this.devices = [
 
     { name: 'rfcontroller 1', location: "kitchen", driver: "acrf", id: "H1"},
     { name: 'rfcontroller 5', location: "kitchen", driver: "acrf", id: "H5"},
-    { name: 'rfcontroller 6', location: "kitchen", driver: "acrf", id: "H6"},
+//    { name: 'rfcontroller 6', location: "kitchen", driver: "acrf", id: "H6"},
     { name: 'rfcontroller 7', location: "kitchen", driver: "acrf", id: "H7"},
     { name: 'rfcontroller 8', location: "kitchen", driver: "acrf", id: "H8"},
 
@@ -97,6 +97,18 @@ this.devices = [
 // {name: "arm state", device: "variables", id: "Z6"}
 
 this.events = [
+///////////////////////////
+// full front sprinkler cycle
+{name: "Front cycle", trigger: "cron", value:"0 0 6 * * 1,3,5", actions:[
+	{ do: 'device', name: 'Lawn 1', value: 'on'},
+	{ do: 'device', name: 'Lawn 1', value: 'off', delay: '10:00'},
+	{ do: 'device', name: 'Lawn 2', value: 'on', delay: '10:30'},
+	{ do: 'device', name: 'Lawn 2', value: 'off', delay: '20:30'},
+	{ do: 'device', name: 'Mound', value: 'on', delay: '21:00'},
+	{ do: 'device', name: 'Mound', value: 'off', delay: '31:00'},
+	{ do: 'device', name: 'Curb', value: 'on', delay: '31:30'},
+	{ do: 'device', name: 'Curb', value: 'off', delay: '36:30'}
+]},
 
 /////////////////////////////
 // these events are the security alarm
@@ -246,13 +258,13 @@ this.events = [
 	{do: "device", name: "flourescents", value: "on"},
 	{do: "device", name: "bugzapper", value: "on"},
 	{do: "device", name: "Rock Light", value: "on", delay: "30min"},
-	{do: "device", name: "Tiffany Lamp", value: "on", delay: "0:05"},
+	{do: "device", name: "Tiffany Lamp", value: "on", delay: "5:00"},
 	{do: "device", name: "xmas tree", value: "on", delay: "20min"},
 	{do: "device", name: "porch lights", value: "on"}
 ]},
 
 { name: "Evening Lights Out", trigger: "cron", value:"0 0 20 * * *", actions:[
-	{do: "device", name: "Tiffany Lamp", value: "off", delay: "2:00"},
+	{do: "device", name: "Tiffany Lamp", value: "off", delay: "2:00:00"},
 ]},
 
 { name: "Night Thermo Unoccupied", trigger: "cron", value:"0 0 0 * * *", actions:[
@@ -269,8 +281,8 @@ this.events = [
 ]},
 
 { name: "security ligts off dawn", trigger: "sun", value:"rise", actions:[
-	{do: "device", name: "Rock Light", value: "off", delay: "1:00"},
-	{do: "device", name: "porch lights", value: "off", delay: "1:00"}
+	{do: "device", name: "Rock Light", value: "off", delay: "1:00:00"},
+	{do: "device", name: "porch lights", value: "off", delay: "1:00:00"}
 ]},
 
 

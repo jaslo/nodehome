@@ -62,24 +62,17 @@ var g = {
 	        // [hh:][mm:][ss][.ms]
 	        var parts = del.split(":");
 
-            if (parts.length == 1) { // :22 seconds
-                totalsec = parseInt(parts[0]);
+            if (parts.length == 2) { 
+            	if (parts[0] === "") { // :22 seconds
+	                totalsec = parseInt(parts[1]);
+	            }
+	            else {  // 1:30 (minutes, seconds)
+                	totalsec = (parseInt(parts[0]) * 60) + parseInt(parts[1]);
+                }
             }
-            else if (parts.length >= 2) { // 1:30 (hours, minutes)
-                totalsec = ((parseInt(parts[0]) * 60) + parseInt(parts[1])) * 60;
+            else if (parts.length == 3) { // 1:01:30 (hours minutes seconds)
+                totalsec = (((parseInt(parts[0]) * 60) + parseInt(parts[1])) * 60) + parts[2];
             }
-            if (parts.length == 3) { // 1:01:30 (hours minutes seconds) -- who needs this?
-                totalsec += parts[2];
-            }
-/*
-	        var totalsec = parts[0] * 3600;
-	        if (parts.length > 1) {
-	        	totalsec += parts[1] * 60;
-	        }
-	        if (parts.length > 2) {
-	        	totalsec += parts[2];
-	        }
-*/
 	        return totalsec * 1000;
 		}
 		else if (del.endsWith("sec")) {

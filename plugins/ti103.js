@@ -154,6 +154,10 @@ function ti103() {
     	to = null;
     	//g.log(g.LOG_DIAGNOSTIC,"send ti103 checkstatus");
     	self.sendser("$>2800008C#");
+    	if (statusTimer) {
+    		clearTimeout(statusTimer);
+    		statusTimer = null;
+    	}
     	if (!statusTimer) {
 	    	statusTimer = setTimeout(function() {
 	    		g.log(g.LOG_WARNING, "****** REMOTE RECIEVER STATUS TIMEOUT ****");

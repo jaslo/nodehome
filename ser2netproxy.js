@@ -26,7 +26,9 @@ function ser2netproxy(netaddr) {
             });
             client.on('close', function() {
 	        	g.log(g.LOG_ERROR,"ser2net got close");
-	        	client.removeAllListeners();
+	        	if (client) {
+	        		client.removeAllListeners();
+	        	}
                 client = null;
 	        	self.open(cb);
             });
