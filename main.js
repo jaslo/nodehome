@@ -9,9 +9,11 @@
 // some "special" interfaces
 var app = require("./app"),
 	evactions = require("./evactions"),
+	argv = require('minimist')(process.argv.slice(2)),
 	g = require("./globals");
 
 
+g.argv = argv;
 var sun = require("./plugins/sunInterface.js");
 sun.initialize("San Jose, Calif.");
 

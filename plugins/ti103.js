@@ -142,7 +142,7 @@ function ti103() {
             inbuffer = "";
 	    }
         if (!to)
-	       	to = setTimeout(checkStatusLoop,2000);
+	       	to = setTimeout(checkStatusLoop,8000);
     };
 
     // $>28001A03A03 AONAON81#
@@ -151,7 +151,10 @@ function ti103() {
     // keep sending 'query' until $<2800!4B# is returned?
 
     var checkStatusLoop = function() {
-    	to = null;
+    	if (to) {
+    		clearTimeout(to);
+	    	to = null;
+    	}
     	//g.log(g.LOG_DIAGNOSTIC,"send ti103 checkstatus");
     	self.sendser("$>2800008C#");
     	if (statusTimer) {

@@ -23,8 +23,13 @@ g.ti103initialize = function() { return "192.168.0.143:2001"; }; // 9600
 //    ti103init: '/dev/ttyUSB0,{ "baudrate": 9600 }',
 //    acrf2init: "/dev/nul",
 g.acrfinitialize = function() {
-	if (os.type().toLowerCase() == 'linux') return '/dev/ttyUSB0,{ "baudrate": 4800 }';
-	else return 'COM7,{ "baudrate": 4800 }';
+	if (os.type().toLowerCase() == 'linux') {
+		console.log("acrfdev = " + g.argv.acrfdev);
+		return g.argv.acrfdev + ',{"baudrate":4800}';
+	}
+	else {
+		return 'COM7,{ "baudrate": 4800 }';
+	}
 }
 
 // these are numbered to run after the "base interface" initialization above
@@ -99,7 +104,7 @@ this.devices = [
 this.events = [
 ///////////////////////////
 // full front sprinkler cycle
-{name: "Front cycle", trigger: "cron", value:"0 0 6 * * 1,3,5", actions:[
+{name: "Front cycle", /* trigger: "cron", value:"0 0 6 * * 1,3,5", */ actions:[
 	{ do: 'device', name: 'Lawn 1', value: 'on'},
 	{ do: 'device', name: 'Lawn 1', value: 'off', delay: '10:00'},
 	{ do: 'device', name: 'Lawn 2', value: 'on', delay: '10:30'},
@@ -263,8 +268,16 @@ this.events = [
 	{do: "device", name: "porch lights", value: "on"}
 ]},
 
-{ name: "Evening Lights Out", trigger: "cron", value:"0 0 20 * * *", actions:[
-	{do: "device", name: "Tiffany Lamp", value: "off", delay: "2:00:00"},
+{ name: "Evening Lights On Early", trigger: "cron", value:"0 0 19 * * *", actions:[
+	{do: "device", name: "Floor Lamp", value: "on"},
+	{do: "device", name: "flourescents", value: "on"},
+	{do: "device", name: "bugzapper", value: "on"},
+	{do: "device", name: "porch lights", value: "on"}
+]},
+
+
+{ name: "Evening Lights Out", trigger: "cron", value:"0 0 22 * * *", actions:[
+	{do: "device", name: "Tiffany Lamp", value: "off"},
 ]},
 
 { name: "Night Thermo Unoccupied", trigger: "cron", value:"0 0 0 * * *", actions:[
@@ -273,7 +286,7 @@ this.events = [
 ]},
 
 { name: "Heat unoccupied", actions:[
-	{do: "device", name: "thermo", value: "heatpoint", parm: 62}
+	{do: "device", name: "thermo", value: "heatpoint", parm: 60}
 ]},
 
 { name: "Cool unoccuped", actions:[

@@ -25,7 +25,7 @@ function driverbase() {
 	        }
 	    }
 	    lastidval = id + val;
-        g.log(g.LOG_TRACE,"cantrigger false for " + id + "," + val);
+        //g.log(g.LOG_TRACE,"cantrigger false for " + id + "," + val);
         return false;
     }
 

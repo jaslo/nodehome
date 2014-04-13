@@ -71,7 +71,7 @@ var g = {
                 }
             }
             else if (parts.length == 3) { // 1:01:30 (hours minutes seconds)
-                totalsec = (((parseInt(parts[0]) * 60) + parseInt(parts[1])) * 60) + parts[2];
+                totalsec = (((parseInt(parts[0]) * 60) + parseInt(parts[1])) * 60) + parseInt(parts[2]);
             }
 	        return totalsec * 1000;
 		}
