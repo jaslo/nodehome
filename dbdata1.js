@@ -1,0 +1,403 @@
+
+var mongoose = require("mongoose"),
+    Q = require("q"),
+    g = require("./globals");
+
+
+g.ti103initialize = "192.168.0.143:2001"; // 9600
+//    ti103init: '/dev/ttyUSB0,{ "baudrate": 9600 }',
+//    acrf2init: "/dev/nul",
+g.acrfinitialize = '/dev/ttyUSB0,{ "baudrate": 4800 }';
+//g.acrfinitialize = 'COM7,{ "baudrate": 4800 }';
+
+// these are numbered to run after the "base interface" initialization above
+
+g.rcsx10binitialize1 = "ti103,K";
+g.keypadinitialize1 = "ti103,H";
+
+
+var Schema = mongoose.Schema;
+var ObjectId = mongoose.Schema.Types.ObjectId;
+
+var deviceSchema = new Schema({
+    name: String,
+    driver: String, // driverid?
+    location: String,
+    id: String
+});
+
+//    { name: "stairwell motion", trigger: "stairwell motion", value: "on", nolog: true, actions: [
+//        {do: "script", name: "backdoor", value:"run", parm: "stairwell motion"},
+//    ]},
+
+var eventSchema = new Schema({
+    name: String,
+    trigger: String,
+    triggerId: ObjectId,
+    value: String,
+    nolog: Boolean,
+    actions: [
+        {
+            'do': String,
+            device: ObjectId,
+            name: String,
+            value: String,
+            parm: String,
+            delay: Number // store as seconds
+        }
+    ]
+});
+
+eventSchema.statics.createFromObj = function(obj) {
+	var ev = new EventModel(obj);
+    if (ev.trigger) { // otherwise a "manual event"
+        if (!g.devicemap[ev.trigger]) {
+            console.log("Event Trigger Error: " + obj.name + " " + ev.trigger);
+            return null;
+        }
+    	ev.triggerId = g.devicemap[ev.trigger]._id;
+    }
+    else ev.triggerId = null;
+
+    for (var i = 0; i < ev.actions.length; i++) {
+        var a = ev.actions[i];
+        if (a['do'] == 'device') { // device/event/speak/script/play
+            if (!g.devicemap[a['name']]) {
+                console.log("Event Action Error");
+                continue;
+            }
+            a['device'] = g.devicemap[a['name']]._id;
+        }
+    }
+    return ev;
+}
+
+var EventModel = mongoose.model("Events",eventSchema);
+var DeviceModel = mongoose.model("Devices",deviceSchema);
+
+var findDevices = Q.nbind(DeviceModel.find,DeviceModel);
+//var findDevices = Q.npost(DeviceModel,"find",{});
+var findEvents = Q.nbind(EventModel.find,EventModel);
+
+DeviceModel.on('error', function(err) {
+	console.log('uh oh');
+});
+
+function db() {
+    var self = this;
+
+    this.init = function() {
+        mongoose.connect("mongodb://localhost/home");
+
+    }
+
+    function saveStaticDevicesInDb(err, Devices) {
+
+    	//redis.hmset("Devices:" + dev.name, ["driver", dev.driver, "location", dev.location, "id", dev.id]);
+
+    	var dfr = [];
+    	for (var i in self.devices) {
+        	var d = self.devices[i];
+            d.state = "none";
+	        if (!d.id) d.id = d.name;
+	        var d1 = new DeviceModel(d);
+	        (function(d1) {
+                var d2 = Q.npost(d1,"save");
+		        //var d2 = Q.defer();
+		        dfr.push(d2);
+//		        d1.save(function(err,data,numAffected) {
+//		        	d2.resolve();
+//		        });
+		    })(d1);
+        }
+        return Q.all(dfr);
+    }
+
+    function saveStaticEventsInDb() {
+        var dfr = [];
+        for (var i in self.events) {
+            var d = self.events[i];
+            var d1 = EventModel.createFromObj(d);
+            //var d1 = new EventModel(d);
+            (function(d1) {
+                var d2 = Q.defer();
+                dfr.push(d2.promise);
+                d1.save(function(err,data,numAffected) {
+                    d2.resolve();
+                });
+            })(d1);
+        }
+        return Q.all(dfr);
+    }
+
+    this.loadDevices = function() {
+    	// temp;
+    	// delete all devices
+    	var dfr = Q.defer();
+    	DeviceModel.find().remove();
+
+    	// 1) try to load from database
+        var Devices;
+
+        findDevices({}).done(function(devices) {
+    		if (!devices || devices.length == 0) {
+    			saveStaticDevicesInDb()
+    			.done(function() {
+	    			findDevices({}).done(function(devices) {
+	    				dfr.resolve(devices);
+	    			});
+	    		});
+    		}
+    		else dfr.resolve(devices);
+    	});
+    	return dfr.promise;
+    };
+
+    this.loadEvents = function() {
+    	var dfr = Q.defer();
+    	EventModel.find().remove();
+
+    	// 1) try to load from database
+        var Events;
+
+    	findEvents({}).done(function(Events) {
+	        if (!Events || Events.length == 0) {
+	        	saveStaticEventsInDb()
+                .done(function() {
+    	        	findEvents({}).done(function(err,Events) {
+    			    	dfr.resolve(err,Events);
+    	        	});
+                });
+		    }
+		    else {
+		    	dfr.resolve(Events);
+		    }
+
+		});
+    	return dfr.promise;
+    }
+
+    // these will live in the database at some point
+    this.devices = [
+        { name: 'cron', driver: 'cron', location:'system', id:'cron' }, // system device
+        { name: 'sun', driver: 'sun' , location:'system', id:'sun'}, // system device
+        { name: 'curl', driver: 'curl', location:'system',id:'curl'}, // system device
+        { name: 'homeseerpost', driver: 'homeseerpost', location:'system',id:'homeseerpost'},
+        { name: 'keypad', driver: 'keypad', location: 'system', id: 'keypad'},
+
+        { name: 'thermo', driver: 'rcsx10b', location:'thermo', id:'ti103,K'},
+
+        { name: 'rfcontroller 1', location: "kitchen", driver: "acrf", id: "H1"},
+        { name: 'rfcontroller 5', location: "kitchen", driver: "acrf", id: "H5"},
+        { name: 'rfcontroller 6', location: "kitchen", driver: "acrf", id: "H6"},
+        { name: 'rfcontroller 7', location: "kitchen", driver: "acrf", id: "H7"},
+        { name: 'rfcontroller 8', location: "kitchen", driver: "acrf", id: "H8"},
+
+        // rf motion sensors (hawkeye)
+        {name: "downstairs motion", location: "downstairs", driver: "acrf", id: "A3" },
+        {name: "hawkeye A4", location: "porch", driver: "acrf", id: "A4" },
+        {name: "stairwell motion", location: "stairwell", driver: "acrf", id: "A6" },
+        {name: "kitchen motion", location: "kitchen", driver: "acrf", id: "A14" },
+        {name: "kitchen light sensor", location: "kitchen", driver: "acrf", id: "A15" },
+
+        {name: "downstairs switch 1", location: "downstairs", driver:'ti103',id:'F1'},
+        {name: "downstairs switch 2", location: "downstairs", driver:'ti103',id:'F2'},
+        {name: "downstairs switch 3", location: "downstairs", driver:'ti103',id:'F3'},
+        {name: "downstairs switch 4", location: "downstairs", driver:'ti103',id:'F4'},
+
+        { name: 'Rear 2', location: 'sprinklers', driver: 'ti103', id: 'O5' },
+        { name: 'Rear 1', location: 'sprinklers', driver: 'ti103', id: 'O4' },
+        { name: 'Lawn 1', location: 'sprinklers', driver: 'ti103', id: 'O1' },
+        { name: 'Lawn 2', location: 'sprinklers', driver: 'ti103', id: 'O2' },
+        { name: 'Curb', location: 'sprinklers', driver: 'ti103', id: 'O3' },
+        { name: 'Mound', location: 'sprinklers', driver: 'ti103', id: 'O6' },
+
+        { name: 'Tiffany Lamp', location: 'upstairs', group:'lights', driver:'ti103',id:'D11'},
+        { name: 'Driveway IR Beam', location: 'downstairs', group:'motion', driver:'ti103',id:'D16'},
+        { name: 'Rock Light', location: 'outside', group:'lights', driver:'ti103',id:'D6'},
+
+        { name: 'xmas tree', location: 'outside', group:'lights', driver:'ti103',id:'C3'},
+        { name: 'flourescents', location: 'kitchen', group:'lights', driver:'ti103',id:'H6'},
+        { name: 'porch lights', location: 'outside', group:'lights', driver:'ti103',id:'D7'},
+        { name: 'Floor Lamp', location: 'downstairs', group:'lights', driver:'ti103',id:'D10'},
+        { name: 'Driveway Lights Motion', location: 'outside', group:'lights', driver:'ti103',id:'E2'},
+
+        { name: 'Front Door', location: 'outside', group:'motion', driver:'ti103',id:'B6'},
+        { name: 'Back Doorbell', location: 'outside', group:'motion', driver:'ti103',id:'B8'},
+
+        { name: 'Back door', location: 'kitchen', group: 'motion', driver: 'ti103', id: 'B2'},
+
+        { name: 'Couch Light', location: 'downstairs', driver:'ti103',id:'D8'},
+        { name: 'bugzapper', location: 'outside', driver:'ti103',id:'D9'},
+
+        // for variables, the id should be the same as the name
+        { name: 'drivewayrx', driver: 'variables'},
+        { name: 'virtual test', driver: 'variables'},
+        { name: "arm state", driver: "variables"},
+        { name: "devlast", driver: "variables"}
+    ];
+
+    // for cron: sec min hour day month dayofweek (0-6 Sun-Sat)
+
+    // {name: "arm state", device: "variables", id: "Z6"}
+
+    this.events = [
+
+    /////////////////////////////
+    // these events are the security alarm
+    { name: "back door switch", trigger: "Back door", value: "on", actions: [
+        {do: "script", name: "backdoor", value:"run", parm: "Back door"},
+        {do: "device", name: "Back door", value:"off"}
+    ]},
+
+    // rf events from homeseer, trigger remotely to homeseer
+    { name: "arm from keypad", trigger: 'rfcontroller 1', value:"off", actions: [
+    //    { do: "script", name: "homeseerpost", value:"Post", parm: 'TriggerEvent("Arm from Keypad")'},
+        { do: "device", name: "arm state", value: "arming"},
+        { do: "speak", value: "arming"}
+    ]},
+
+    { name: "driveway ir", trigger: 'Driveway IR Beam', value: "on", actions: [
+        { do: "device", name: "Driveway IR Beam", value: "off"},
+        { do: "play", name: "ding.wav"},
+        { do: "speak", value: "driveway"},
+        { do: "script", name: "driveway", value: "Run" }
+    ]},
+
+    { name: "hawkeye a14", trigger: "kitchen motion", value: "on", nolog: true, actions: [
+    //    { do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",2)'},
+        {do: "script", name: "backdoor", value:"run", parm: "kitchen motion"},
+    ]},
+
+    { name: "downstairs motion", trigger: "downstairs motion", value: "on", nolog: true, actions: [
+        {do: "script", name: "backdoor", value:"run", parm: "downstairs motion"},
+    ]},
+
+    { name: "stairwell motion", trigger: "stairwell motion", value: "on", nolog: true, actions: [
+        {do: "script", name: "backdoor", value:"run", parm: "stairwell motion"},
+    ]},
+
+    //////////////////////////////////////////
+
+    { name: "hawkeye a14", trigger: "kitchen motion", value: "off", nolog: true, actions: [
+        //{ do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A14",3)'}
+    ]},
+
+    { name: "unoccupied thermostat", nolog: false, actions: [
+        { do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("unoccupied thermostat")'}
+        //{ do: "device", name: "homeseerpost", value: 'TriggerEvent("unoccupied thermostat")'}
+    ]},
+    { name: "all xmas lights off", actions: [
+        { do: "device", name: "xmas tree", value: 'off'}
+    ]},
+
+    { name: "remote h5", trigger: 'rfcontroller 5', value:"off", actions: [
+        { do: "device", name: "xmas tree", value: 'off'}
+    //    { do: "device", name: "homeseerpost", value: 'TriggerEvent("all xmas lights off")'}
+    ]},
+    //{ name: "remote h6", trigger: 'rfcontroller 6', value:"off", actions: [
+    //    { do: "device", name: "flourescents", value: 'off'}
+    //]},
+    { name: "Lights out bedtime", actions: [
+        { do: "device", name: "Floor Lamp", value: 'off', delay: '5min'},
+        { do: "device", name: "Couch Light", value: 'off'},
+        { do: "device", name: "flourescents", value: 'off', delay: '10min'},
+        { do: "device", name: "bugzapper", value: 'off'},
+        { do: "event", name: "all xmas lights off"},
+        { do: "event", name: "unoccupied thermostat"}
+    ]},
+    { name: "Upstairs lights out", actions: [
+        { do: "device", name: "Tiffany Lamp", value: 'off'},
+        { do: "device", name: "porch lights", value: 'off'},
+    ]},
+    { name: "remote h7", trigger: 'rfcontroller 7', value:"off", actions: [
+        { do: "event", name: "Lights out bedtime"}
+    ]},
+    { name: "remote h8", trigger: 'rfcontroller 8', value:"off", actions: [
+        { do: "event", name: "Upstairs lights out"}
+    ]},
+    { name: "remote h5", trigger: 'rfcontroller 5', value:"on", actions: [
+        //{ do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("kitchen controller h5")'}
+    ]},
+    //{ name: "remote h6", trigger: 'rfcontroller 6', value:"on", actions: [
+    //  { do: "script", name: "homeseerpost", value: 'Post', parm: 'TriggerEvent("kitchen light")'}
+    //]},
+
+    { name: "hawkeye a3", trigger: "downstairs motion", value: "on", actions: [
+        //{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A3",2)'}
+    ]},
+    { name: "hawkeye a3", trigger: "downstairs motion", value: "off", actions: [
+        //{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A3",3)'}
+    ]},
+
+    { name: "hawkeye a4", trigger: "hawkeye A4", value: "on", actions: [
+        //{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A4",2)'}
+    ]},
+    { name: "hawkeye a4", trigger: "hawkeye A4", value: "off", actions: [
+        //{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A4",3)'}
+    ]},
+
+    { name: "hawkeye a6", trigger: "stairwell motion", value: "on", actions: [
+        //{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A6",2)'}
+    ]},
+    { name: "hawkeye a6", trigger: "stairwell motion", value: "off", actions: [
+        //{ do: "script", name: "homeseerpost", value: 'Post', parm: 'setDeviceStatus("A6",3)'}
+    ]},
+
+    { name: "hawkeye a15", trigger: "kitchen light sensor", value: "on", actions: [
+        //{ do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A15",2)'}
+    ]},
+    { name: "hawkeye a15", trigger: "kitchen light sensor", value: "off", actions: [
+        //{ do: "script", name: "homeseerpost", value: "Post", parm: 'setDeviceStatus("A15",3)'}
+    ]},
+    {name: "thermo on", actions: [
+        {do: "device", name: "thermo", value: 'fanon'}
+    ]},
+    {name: "thermo auto", actions: [
+        {do: "device", name: "thermo", value: 'fanauto'}
+    ]},
+
+    {name: "thermo cool", actions: [
+        {do: "device", name: "thermo", value: 'coolpoint', parm: 71}
+    ]},
+
+    {name: "kitchen from switch on", trigger: "downstairs switch 1", value: "on", actions: [
+        { do: "device", name: "flourescents", value: 'on'}
+    ]},
+
+    {name: "kitchen from switch on", trigger: "downstairs switch 1", value: "off", actions: [
+        { do: "device", name: "flourescents", value: 'off'}
+    ]},
+
+    //{ name: "test lights on" , trigger: "cron", value: "*/5 * * * *", actions:[
+    //    { do: "device", name: "flourescents", value: 'off'},
+    //]},
+    //{ name: "test device" , trigger: "cron", value: "2,7,12,17,22,27,32,37,42,47,52,57 * * * *", actions:[
+    //    { do: "device", name: "flourescents", value: 'on'},
+    //]},
+
+    //{ name: "Evening Lights On", trigger: "sun", value:"set-1:00", actions:[
+    { name: "Evening Lights On", trigger: "sun", value:"set", actions:[
+        {do: "device", name: "Floor Lamp", value: "on"},
+        {do: "device", name: "flourescents", value: "on"},
+        {do: "device", name: "bugzapper", value: "on"},
+        {do: "device", name: "Rock Light", value: "on", delay: "30min"},
+        {do: "device", name: "Tiffany Lamp", value: "on", delay: "0:05"},
+        {do: "device", name: "xmas tree", value: "on", delay: "20min"},
+        {do: "device", name: "porch lights", value: "on"}
+    ]},
+
+    { name: "Evening Lights Out", trigger: "cron", value:"0 0 20 * * *", actions:[
+        {do: "device", name: "Tiffany Lamp", value: "off", delay: "2:00"},
+    ]},
+
+    { name: "security ligts off dawn", trigger: "sun", value:"rise", actions:[
+        {do: "device", name: "Rock Light", value: "off", delay: "1:00:00"},
+        {do: "device", name: "porch lights", value: "off", delay: "1:00:00"}
+    ]},
+
+
+    ];
+}
+
+module.exports = new db();

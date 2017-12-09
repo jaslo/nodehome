@@ -1,0 +1,41 @@
+{
+  "name": "nodehome",
+  "version": "0.1.0",
+  "description": "home automation for nodejs",
+  "author": {
+    "name": "Jason Loveman",
+    "email": "jloveman@gmail.com"
+  },
+  "main": "main.js",
+  "dependencies": {
+    "JQDeferred": "~1.8.2",
+    "connect": "~2.7.9",
+    "connect-redis": "~1.4.5",
+    "cron": "~1.0.1",
+    "dateformat": "~1.0.6",
+    "ejs": "~0.8.3",
+    "espeak": "~0.0.3",
+    "express": "~3.0.4",
+    "flite": "~0.1.2",
+    "mongojs": "^2.4.1",
+    "mongoose": "^4.13.6",
+    "node-inspector": "~0.3.1",
+    "node-speak": "~0.0.2",
+    "optimist": "~0.3.5",
+    "q": "~0.9.7",
+    "redis": "~0.8.2",
+    "request": "~2.12.0",
+    "say": "~0.5.0",
+    "serialport": "^6.0.4",
+    "speaker": "^0.4.0",
+    "time": "~0.9.2",
+    "underscore": "~1.5.2",
+    "wav": "~0.1.0"
+  },
+  "engine": {
+    "node": ">=0.10.10"
+  },
+  "_id": "nodehome@0.4.0",
+  "readme": "ERROR: No README.md file found!",
+  "_from": "nodehome"
+}

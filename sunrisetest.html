@@ -1,0 +1,183 @@
+<html>
+<head>
+<script>
+
+/*
+http://www.infoplease.com/ipa/A0001769.html
+http://www.infoplease.com/ipa/A0001796.html
+
+AddCity "Albuquerque, NM", 35.05, 106.39, 7
+    AddCity "Anchorage, AK", 61.13, 149.54, 9
+    AddCity "Atlanta, GA", 33.44, 84.23, 5
+    AddCity "Boston, MA", 42.21, 71.03, 5
+    AddCity "Boulder, CO", 40.125, 105.237, 7
+    AddCity "Chicago, IL", 41.51, 87.39, 6
+    AddCity "Dallas, TX", 32.46, 96.47, 6
+    AddCity "Denver, CO", 39.44, 104.59, 7
+    AddCity "Detroit, MI", 42.2, 83.03, 5
+    AddCity "Honolulu, HA", 21.18, 157.51, 10
+    AddCity "Indianapolis, IN", 39.46, 86.09, 5
+    AddCity "Kansas City, MO", 39.05, 94.34, 6
+    AddCity "Los Angeles, CA", 34.03, 118.14, 8
+    AddCity "Miami, FL", 25.46, 80.11, 5
+    AddCity "Minneapolis, nMonth", 44.58, 93.15, 6
+    AddCity "New Orleans, LA", 29.57, 90.04, 6
+    AddCity "New York City, NY", 40.43, 74.01, 5
+    AddCity "Oklahoma City, OK", 35.28, 97.3, 6
+    AddCity "Philadelphia, PA", 39.57, 75.09, 5
+    AddCity "Phoenix, AZ", 33.26, 112.04, 7
+    AddCity "Saint Louis, MO", 38.37, 90.11, 6
+    AddCity "San Fransisco, CA", 37.46, 122.25, 8
+    AddCity "Seattle, WA", 47.36, 122.19, 8
+    AddCity "Washington DC", 38.53, 77.02, 5
+    AddCity "Beijing, China", 39.55, -116.25, -8
+    AddCity "Berlin, Germany", 52.33, -13.3, -1
+    AddCity "Buenos Aires, Argentina", -34.36, 58.27, 3
+    AddCity "Cairo, Egypt", -30.06, -31.22, -2
+    AddCity "Cape Town, South Africa", -33.55, -18.22, -2
+    AddCity "Caracas, Venezula", 10.3, 66.56, 4
+    AddCity "Helsinki, Finland", 60.1, -24.58, -2
+    AddCity "Hong Kong, China", 22.15, -114.1, -8
+    AddCity "London, England", 51.3, 0.1, 0
+    AddCity "Mexico City, Mexico", 19.24, 99.09, 6
+    AddCity "Moscow, Russia", 55.45, -37.35, -3
+    AddCity "New Delhi, India", 28.36, -77.12, -5.5
+    AddCity "Ottawa, Canada", 45.25, 75.42, 5
+    AddCity "Paris, France", 48.52, -2.2, -1
+    AddCity "Rio de Janeiro, Brazil", -22.54, 43.14, 3
+    AddCity "Riyadh, Saudi Arabia", 24.38, -46.43, -3
+    AddCity "Rome, Italy", 41.54, -12.29, -1
+    AddCity "Sydney, Australia", -33.52, -151.13, -10
+    AddCity "Tokyo, Japan", 35.42, -139.46, -9
+    AddCity "Zurich, Switzerland", 47.23, -8.32, -1
+*/
+
+    function fixDegrees(L) {
+        while (L < 0) L += 360;
+        L = L % 360;
+        return L;
+    }
+
+    function toRad(Value) {
+        /** Converts numeric degrees to radians */
+        return Value * Math.PI / 180;
+    }
+
+    function toDegrees(Value) {
+        return Value * 180 / Math.PI;
+    }
+/*
+    http://williams.best.vwh.net/sunrise_sunset_algorithm.htm
+
+    zenith:                Sun's zenith for sunrise/sunset
+      offical      = 90 degrees 50'
+      civil        = 96 degrees
+      nautical     = 102 degrees
+      astronomical = 108 degrees
+*/
+    var zenith = toRad(90.8333);
+    var localOffset = new Date().getTimezoneOffset(); // in minutes
+
+    function calc(month, year, day, longitude, latitude, rise) {
+// 1. first calculate the day of the year
+        var N1 = Math.floor(275 * month / 9);
+        var N2 = Math.floor((month + 9) / 12);
+        var N3 = (1 + Math.floor((year - 4 * Math.floor(year / 4) + 2) / 3));
+        var N = N1 - (N2 * N3) + day - 30;
+// 2. convert the longitude to hour value and calculate an approximate time
+        var lngHour = longitude / 15;
+        var t;
+        if (rise) {
+            t = N + ((6 - lngHour) / 24);
+        } else { // set
+            t = N + ((18 - lngHour) / 24);
+        }
+// 3. calculate the Sun's mean anomaly
+        var M = (0.9856 * t) - 3.289;
+//4. calculate the Sun's true longitude
+        var L = M + (1.916 * Math.sin(toRad(M))) + (0.020 * Math.sin(toRad(2 * M))) + 282.634;
+        L = fixDegrees(L);
+//  NOTE: L potentially needs to be adjusted into the range [0,360) by adding/subtracting 360
+
+//5a. calculate the Sun's right ascension
+
+        var RA = toDegrees(Math.atan(0.91764 * Math.tan(toRad(L))));
+        RA = fixDegrees(RA);
+//    NOTE: RA potentially needs to be adjusted into the range [0,360) by adding/subtracting 360
+
+//5b. right ascension value needs to be in the same quadrant as L
+
+        var Lquadrant  = (Math.floor( L/90)) * 90;
+        var RAquadrant = (Math.floor(RA/90)) * 90;
+        var RA = RA + (Lquadrant - RAquadrant);
+
+//5c. right ascension value needs to be converted into hours
+
+        RA = RA / 15;
+
+//6. calculate the Sun's declination
+
+        var sinDec = 0.39782 * Math.sin(toRad(L));
+        var cosDec = Math.cos(Math.asin(sinDec));
+
+//7a. calculate the Sun's local hour angle
+        var cosH = (Math.cos(zenith) - (sinDec * Math.sin(toRad(latitude)))) / (cosDec * Math.cos(toRad(latitude)));
+
+        if (cosH >  1)
+          return null;
+        if (cosH < -1)
+          return null;
+
+//7b. finish calculating H and convert into hours
+        var H;
+        if (rise) {
+          H = 360 - toDegrees(Math.acos(cosH));
+        }
+        else {
+          H = toDegrees(Math.acos(cosH));
+        }
+
+        H = H / 15;
+
+//8. calculate local mean time of rising/setting
+
+        var T = H + RA - (0.06571 * t) - 6.622;
+
+//9. adjust back to UTC
+
+        var UT = T - lngHour;
+        while (UT < 0) UT += 24;
+        UT = UT % 24;
+
+//    NOTE: UT potentially needs to be adjusted into the range [0,24) by adding/subtracting 24
+
+//10. convert UT value to local time zone of latitude/longitude
+    // localOffset is in minutes
+
+        // the time is in hours/fractions of hours 1.5 = 1:30
+        var localT = UT - (localOffset/60);
+
+        var hh = Math.floor(localT);
+        var m = (localT - hh) * 60 + 0.5;
+        var suntime = new Date(year,month-1,day,hh,Math.floor(m),0,0);
+        return suntime;
+    }
+
+
+    function gettimes() {
+//        var t1 = calc(6, 1990,25,-74.3,40.9,true);
+        var d = new Date();
+        var mm = d.getMonth();
+        var yy = d.getYear() + 1900;
+        var dd = d.getDate();
+        var t = calc(mm+1, yy,dd,-121.87,37.30,true);
+        var set = calc(mm+1,yy,dd,-121.87,37.30,false);
+        document.getElementById("out").innerHTML = "sunrise: " + t.toTimeString() + "<br/>" + "sunset: " + set.toTimeString();
+    }
+</script>
+</head>
+<body>
+        <input type="button" name="go" onclick="gettimes()"/>
+        <div id="out"></div>
+</body>
+</html>

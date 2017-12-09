@@ -1,0 +1,1 @@
+scp html/default.html pi@192.168.0.225:/home/pi/nodehome/html/

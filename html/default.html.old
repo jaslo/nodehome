@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>NodeHome Main Page</title>
+    <link rel="stylesheet" href="../css/theme.jui.css">
+    <link rel="stylesheet" href="themes/base/jquery-ui.css">
+    <link rel="stylesheet" href="themes/base/jquery.ui.all.css">
+    <link rel="stylesheet" href="tables.css">
+    <script src="jquery-1.9.1.js"></script>
+    <script src="jquery-ui.js"></script>
+    <script src="js/jquery.metadata.js"></script>
+    <script src="js/jquery.tablesorter.js"></script>
+    <script src="js/jquery.tablesorter.widgets.js"></script>
+    <script src="tablesort.js"></script>
+    <script src="date.format.js"></script>
+<!--    <script src="../../ui/jquery.ui.core.js"></script>
+    <script src="../../ui/jquery.ui.widget.js"></script>
+    <script src="../../ui/jquery.ui.tabs.js"></script>
+-->
+    <link rel="stylesheet" href="demos.css">
+    <script>
+
+//
+//TODO: add event, add device dialogs
+//
+
+
+    function findTableRow(tablesel, element) {
+        var td = $(element).parents("td");
+        if (!td) td = element;
+        var tr = $(element).parents("tr");
+        return {
+            row: $(tr[tr.length-1]),
+            index: $(tr[tr.length-1]).children().index(td)
+        };
+
+    }
+
+    function getEventTable(evselector) {
+        $.ajax({
+            type: 'GET',
+            url: '/event'
+        })
+        .done(function(data, textStatus, jqXHR) {
+            // build html from the JSON returned
+            var htmlstr = '<table id="eventTable" class="tablesorter" cellspacing="1">'
+                + '<thead><tr><th>run</th><th>edit</th><th>trigger</th><th>Actions</th>'
+                + '<th>latest</th>'
+                + '</tr></thead><tbody>';
+            $.each(data, function (id) {
+                var val = data[id];
+                htmlstr += '<tr>' +
+                '<td><input type="button" name="run" value="run"/></td>' +
+                '<td><a href="#">' + val.name + '</a></td>' +
+                '<td><a>' + val.trigger + '</a></td>' +
+                '<td><table><tr><td><a href="#">Actions</a></td></tr>';
+                $.each(val.actions, function (act) {
+                    htmlstr += '<tr><td>' + val.actions[act].text + '</td></tr>';
+                });
+                htmlstr += '</table></td>';
+                htmlstr += '<td>' + (val.latest ? new Date(val.latest).format("default") : "never") + '</td>';
+                htmlstr += '</tr>';
+            });
+            htmlstr += '</tbody></table>';
+
+            $(evselector).append(htmlstr);
+            setTableSort("#eventTable",4);
+
+            //$('#eventTable').tablesorter();
+
+            $("#eventTable td").click(function(e) {
+                // 'this' is the row object
+                // the child node is the text node
+                e.stopPropagation();
+                var tr = findTableRow("#eventTable",e.target);
+                var n = tr.index;
+                // column 0 is the "run" button
+                var rowName = $(tr.row.children()[1]).text();
+                console.log("clicked column " + n + "=" + rowName);
+                if (n != -1) {
+                    switch (n) {
+                        case 0: console.log("run");
+                        $.get("/cmd/event?name="+rowName)
+	                		.done(function() {
+	                			setTimeout(function() { getEventTable(evselector); },1000);
+	                		});
+
+                        break;
+                        case 1: console.log("edit"); break;
+                        case 2: console.log("trigger"); break;
+                        case 3: console.log("actions"); break;
+                    }
+                }
+
+                //var t1 = e.target.childNodes[0].data;
+                //console.log(t1);
+                //console.log("this or e");
+
+            });
+
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            alert("failure getting event table");
+        });
+    }
+
+    function getSunTimes(evselector) {
+        $.ajax({
+            type: 'GET',
+            url: '/location'
+        })
+        .done(function(data, textStatus, jqXHR) {
+            var htmlstr = "<div style='display:inline-block;'>For Today:" + new Date().format("default") + "</div>" +
+                "<div style='display:inline-block;margin-left:30px;'>City: " + data.city + " at (" +
+                data.longitude.toFixed(2).toString() + "," +
+                data.latitude.toFixed(2).toString() + ")</div>" +
+                "<div style='display:inline-block;margin-left:30px;'>Next Sunrise: " + new Date(data.rise).format("default") + "</div>" +
+                "<div style='display:inline-block;margin-left:30px;'>Next Sunset: " + new Date(data.set).format("default") + "</div>";
+            $(evselector).append(htmlstr);
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            alert("failure getting location data");
+        });
+    }
+
+    function getLog(evselector) {
+    	$.ajax({
+    		type: "GET",
+    		url: "/log"
+    	})
+    	.done(function(data,textStatus,jqXHR) {
+    		//var lines = data.reverse();
+    		for (var i = 0; i < data.length; i++) {
+    			var sp = data[i].indexOf(' ');
+    			var tz = new Date(data[i].substr(0,sp)).format("isoTime");
+    			$("#logData").prepend("<p>" + tz + " " + data[i].substr(sp) + "</p>");
+    		}
+    	});
+    }
+
+    function getDeviceTable(evselector) {
+        $.ajax({
+            type: 'GET',
+            url: '/device'
+        })
+        .done(function(data, textStatus, jqXHR) {
+            // build html from the JSON returned
+            var htmlstr = '<table id="deviceTable" class="tablesorter" cellspacing="1">'
+                + '<thead><tr><th>name</th><th>location</th><th>driver</th><th>id</th>'
+                + '<th>state</th>'
+                + '<th>group</th>'
+                + '<th>latest</th>'
+                + '</tr></thead><tbody>';
+            $.each(data, function (id) {
+                var val = data[id];
+                htmlstr += '<tr>' +
+                '<td><a href="#">' + val.name + '</a></td>' +
+                '<td><a href="#">' + val.location + '</a></td>' +
+                '<td><a href="#">' + val.driver + '</a></td>' +
+                '<td><a href="#">' + val.id + '</a></td>' +
+                '<td><a href="#">' + val.state + '</a></td>' +
+                '<td><a href="#">' + (val.group ? val.group : "") + '</a></td>' +
+                '<td>' + (val.latest ? new Date(val.latest).format("default") : 'never')+ '</td>' +
+                '</tr>';
+            });
+            htmlstr += '</tbody></table>';
+            $(evselector).empty();
+            $(evselector).append(htmlstr);
+            setTableSort("#deviceTable",6);
+
+            //$('#deviceTable').tablesorter();
+            $("#deviceTable td").click(function(e) {
+                // 'this' is the row object
+                // the child node is the text node
+                e.stopPropagation();
+                var tr = findTableRow("#deviceTable",e.target);
+                var n = tr.index;
+                var rowName = $(tr.row.children()[0]).text();
+                console.log("clicked column " + n + "=" + rowName);
+                switch (n) {
+                	case 4: { // state
+                		var newstate;
+	                	var prev = $(tr.row.children()[4]).text();
+	                	if (prev == "off" || prev=="none") newstate = "on";
+	                	else if (prev == "on") newstate = "off";
+	                	if (newstate) {
+	                		$.get("/cmd/device?name="+rowName+"&value="+newstate)
+	                		.done(function() {
+	                			setTimeout(function() { getDeviceTable(evselector); },1000);
+	                		});
+	                	}
+	                	
+	                }
+                }
+            });
+        })
+        .fail(function(jqXHR, textStatus, errorThrown) {
+            alert("failure getting device table");
+        });
+
+    }
+
+
+    function editDialog(selector) {
+        $(selector).dialog({modal: true, buttons: [
+            { text: "Ok", click: function() {
+                $( this ).dialog( "close" );
+            }},
+            { text: "Cancel", click: function() {
+                $( this ).dialog( "close" );
+            }}
+            ]
+        });
+        $(selector).css('visibility','visible');
+    }
+
+    function lookupDriver(drivername,selector) {
+
+    }
+
+    function setHeat() {
+    	// {do: "device", name: "thermo", value: "heatpoint", parm: 62} -->
+    	$.get("/cmd/device?name=thermo&value=heatpoint&parm=" + $("heatval").value);
+    }
+
+    function setCool() {
+    	$.get("/cmd/device?name=thermo&value=coolpoint&parm=" + $("coolval").value);
+    }
+
+    var curtab;
+    var curPanel;
+
+    $(function() {
+        $("#maintabs").tabs({
+        	beforeActivate: function(event,ui) {
+        		curtab = ui.newTab;
+        		curPanel = ui.newPanel;
+        		switch(curPanel.attr("id")) {
+        			case 'tabs-1': // devices
+        				getDeviceTable("#tabs-1");
+        				break;
+
+        			case 'tabs-2': // events
+        				getEventTable("#tabs=2");
+        				break;
+
+        			case 'tabs-3': //log
+        				getLog("#tabs-3")
+        				break;
+        		}
+        		console.log("here");
+
+        	}
+        });
+        $("#eventDialogTabs").tabs();
+        $( "input[type=submit], a, button" )
+            .button()
+            .click(function( event ) {
+                event.preventDefault();
+            });
+
+        getEventTable("#tabs-2");
+        getDeviceTable("#tabs-1");
+        getSunTimes("#welcome");
+        getLog("#tabs-3")
+    });
+    </script>
+</head>
+<body>
+<div id="welcome" style="font-size:14px">
+<div style="font-size:20px">Welcome to NodeHouse!</div>
+<br/>
+</div>
+<div id="maintabs">
+    <ul>
+        <li><a href="#tabs-1">Devices</a></li>
+        <li><a href="#tabs-2">Events</a></li>
+        <li><a href="#tabs-thermo">Thermostat</a></li>
+        <li><a href="#tabs-x">Edit</a></li>
+        <li><a href="#tabs-3">Log</a></li>
+    </ul>
+    <button>Add new</button>
+    <div id="tabs-x">
+        <a href="#" onclick="editDialog('#deviceDialog')">Add Device</a>
+        <a href="#" onclick="editDialog('#eventDialog')">Add Event</a>
+    </div>
+<!--
+    <div id="tabs-thermo">
+    	<a href="#" onclick="setHeat()"><input id="heatval" type="text" size="20">
+    	<br/>
+    	<a href="#" onclick="setCool()"><input id="coolval" type="text" size="20">
+    </div>
+-->
+    <div id="tabs-1">
+    </div>
+    <div id="tabs-2">
+    </div>
+    <div id="tabs-3">
+        <button onclick="getLog()">Update</button>
+        <button onclick="logFilter()">Filter</button>
+        <input id="filter"></input>
+        <div id="logData">
+        </div>
+    </div>
+</div>
+
+<div class="demo-description">
+<p>Click tabs to swap between content that is broken into logical sections.</p>
+</div>
+
+<div id="deviceDialog" title="Add a device" style="visibility:hidden">
+    <table>
+        <tr>
+            <td>Device driver</td>
+            <td><input onblur="lookupDriver(this.value,'#deviceDialog')" type="text" size="20">
+                </td>
+        </tr>
+        <tr>
+            <td>Device name</td><td><input type="text" size="20"></td>
+        </tr>
+        <tr>
+            <td>Device location</td>
+            <td><input type="text" size="20"></td>
+        </tr>
+        <tr>
+            <td>Device id</td>
+            <td><input type="text" size="20"></td>
+        </tr>
+    </table>
+  <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
+</div>
+
+<div id="eventDialog" title="Add an event" style="visibility:hidden">
+    Event name: <input type="text" size="20">
+    <div id="eventDialogTabs">
+    <ul>
+        <li><a href="#tabs-trigger">Trigger</a></li>
+        <li><a href="#tabs-action">Actions</a></li>
+    </ul>
+    <div id="tabs-trigger">
+    <table>
+        <tr>
+            <td><select>trigger on
+                <option>run event</option>
+                <option>set device</option>
+                <option>none</option>
+            </select>
+            </td>
+        </tr>
+        <tr>
+            <td>Device driver</td>
+            <td><input onblur="lookupDriver(this.value,'#deviceDialog')" type="text" size="20">
+                </td>
+        </tr>
+        <tr>
+            <td>Device id</td>
+            <td><input type="text" size="20"></td>
+        </tr>
+        <tr>
+            <td>Trigger state</td>
+            <td><input type="text" size="20"></td>
+        </tr>
+    </table>
+    </div>
+    <div id="tabs-actions">
+        actions stuff
+    </div>
+
+
+
+</body>
+</html>

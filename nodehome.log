@@ -1,0 +1,15 @@
+debugger listening on port 5858
+
+m:\jasonl\Documents\My Dropbox\mesh\dev\nodehome\plugins\keypad.js:32
+            if (code[history] == val) {
+                    ^
+TypeError: Cannot read property 'undefined' of undefined
+    at m:\jasonl\Documents\My Dropbox\mesh\dev\nodehome\plugins\keypad.js:32:21
+    at m:\jasonl\Documents\My Dropbox\mesh\dev\nodehome\plugins\driverBase.js:47:68
+    at Array.forEach (native)
+    at ti103.publish (m:\jasonl\Documents\My Dropbox\mesh\dev\nodehome\plugins\driverBase.js:47:46)
+    at executeAction (m:\jasonl\Documents\My Dropbox\mesh\dev\nodehome\main.js:157:32)
+    at Object.g.runEventActions (m:\jasonl\Documents\My Dropbox\mesh\dev\nodehome\main.js:102:8)
+    at Array.0 (m:\jasonl\Documents\My Dropbox\mesh\dev\nodehome\main.js:246:19)
+    at null._onTimeout (m:\jasonl\Documents\My Dropbox\mesh\dev\nodehome\plugins\sunInterface.js:203:21)
+    at Timer.listOnTimeout [as ontimeout] (timers.js:110:15)
