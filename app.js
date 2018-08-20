@@ -2,10 +2,13 @@ var http = require("http"),
     express = require("express"),
     fs = require("fs"),
     ejs = require("ejs"),
-    db = require("./data"),
-    RedisStore = require('connect-redis')(express),
+    //db = require("./data"),
+    db = require("./dbdata"),
+    session = require("express-session"),
+    RedisStore = require('connect-redis')(session),
     sun = require('./plugins/sunInterface.js'),
     scriptlib = require("./scriptlib"),
+    util = require("util"),
     g = require("./globals");
 
 var redis = require('redis').createClient();
@@ -28,7 +31,8 @@ var app = express();
         app.use(express.cookieParser('some secret'));
         app.use(express.session({
             store: new RedisStore({host: 'localhost', port:3000, client: redis}),
-            secret: 'gallifrey'
+            secret: 'gallifrey',
+            resave: false
         }));
         // add a middleware to expose the session variable to the templating engine
         app.use(function(req,res,next) {
@@ -109,6 +113,7 @@ function refreshMain(req,res) {
 
 //
 // add a device
+/*
 app.post("/device", function(req,res) {
    // device is
    // name, location, group, drivername
@@ -119,6 +124,7 @@ app.post("/device", function(req,res) {
         refreshMain(req,res);
     });
 });
+*/
 
 app.get("/cmd/loglimit", function(req,res) {});
 
@@ -165,6 +171,10 @@ app.get("/cmd/device", function(req,res) {
 	res.send(200);
 });
 
+app.get("/drivers", function(req, res) {
+	res.send(200,Object.keys(g.drivermap));
+});
+
 // http://localhost:82/cmd/event?name=Lights%20out%20bedtime
 app.get("/cmd/event", function (req,res) {
     var e = g.eventmap[req.query.name];
@@ -190,6 +200,13 @@ app.get("/event", function(req,res) {
         else res.send(404);
     }
     else res.send(200, g.eventmap);
+});
+
+
+app.post("/cmd/action", function(req,res) {
+	console.log(util.inspect(req.query));
+    g.executeAction(req.query,true);
+    res.send(200);
 });
 
 module.exports = app;

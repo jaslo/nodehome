@@ -34,7 +34,8 @@ this.run = function(devid) {
         scriptlib.log("ALARM: -----Tripped -----");
 
         scriptlib.say("Please enter the disarm code. You have sixty seconds");
-        scriptlib.scriptrun("countdown","countdown",59).then(function(nret) {
+        scriptlib.scriptrun("countdown","countdown",59).
+        then(function(nret) {
         	if (!nret) {
         		scriptlib.say("Alarm disabled. Welcome home.");
         		scriptlib.scriptrun("pager","pagePushover","alarm code ok");

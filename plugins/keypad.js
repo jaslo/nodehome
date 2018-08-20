@@ -38,8 +38,9 @@ function keypad() {
             if (code[history] == thiscode) {
                 history++;
                 if (history == code.length) {
-                    if (self.canTrigger("keypad","on")) {
+                    /* if (self.canTrigger("keypad","on")) */ {
                     	self.publish("keypad","on");
+                    	history = 0;
                     }
                 }
             }

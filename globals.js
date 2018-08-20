@@ -1,5 +1,4 @@
 var path = require("path"),
-    argv = require("optimist").argv,
     cluster = require("cluster"),
     Deferred = require("JQDeferred"),
     url = require("url"),

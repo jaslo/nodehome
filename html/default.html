@@ -1,27 +1,143 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
+  <head>
     <meta charset="utf-8">
-    <title>NodeHome Main Page</title>
-    <link rel="stylesheet" href="../css/theme.jui.css">
-    <link rel="stylesheet" href="themes/base/jquery-ui.css">
-    <link rel="stylesheet" href="themes/base/jquery.ui.all.css">
-    <link rel="stylesheet" href="tables.css">
-    <script src="jquery-1.9.1.js"></script>
-    <script src="jquery-ui.js"></script>
-    <script src="js/jquery.metadata.js"></script>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Nodehouse</title>
+
+    <!-- Bootstrap -->
+    <link href="bootstrap311/css/cyborgbootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+      <script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="jquery-1.11.0.js"></script>
     <script src="js/jquery.tablesorter.js"></script>
     <script src="js/jquery.tablesorter.widgets.js"></script>
     <script src="tablesort.js"></script>
     <script src="date.format.js"></script>
-<!--    <script src="../../ui/jquery.ui.core.js"></script>
-    <script src="../../ui/jquery.ui.widget.js"></script>
-    <script src="../../ui/jquery.ui.tabs.js"></script>
--->
-    <link rel="stylesheet" href="demos.css">
-    <script>
 
-    function findTableRow(tablesel, element) {
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="bootstrap311/js/bootstrap.min.js"></script>
+
+    <style>
+    p.tight {
+    	margin-bottom: 0px;
+    }
+    </style>
+  </head>
+  <body>
+<div id="welcome" style="font-size:14px">
+<div style="font-size:20px">Welcome to NodeHouse!</div>
+<br/>
+</div>
+<!-- Nav tabs -->
+<ul class="nav nav-tabs" id="myTab">
+  <li><a href="#devices" data-toggle="tab">Devices</a></li>
+  <li><a href="#events" data-toggle="tab">Events</a></li>
+  <li><a href="#log" data-toggle="tab">Log</a></li>
+  <li><a href="#setup" data-toggle="tab">Setup</a></li>
+  <li><button  id="additem" class="btn btn-primary" style="margin-left:100px;margin-top:5px">Add Item</button></li>
+</ul>
+<div class="tab-content" style="margin-top:20px;">
+  <div class="tab-pane active" id="devices"></div>
+  <div class="tab-pane" id="events"></div>
+  <div class="tab-pane" id="log">
+        <button class="btn btn-primary" onclick="getLog()">Update</button>
+        <button class="btn btn-primary" onclick="logFilter()">Filter</button>
+        <input id="filter"></input>
+        <div id="logData" style="margin-top:30px;font-size:12px">
+        </div>
+  </div>
+  <div class="tab-pane" id="setup">settings</div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="newDevice" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Add a device</h4>
+      </div>
+      <div class="modal-body">
+      	<form class="form-horizontal" role="form">
+      	<div class="form-group">
+        <label class="col-sm-2 control-label">name</label><input><br/>
+        </div>
+        <div class="form-group">
+            <label class="col-sm-2 control-label">driver</label>
+        <div class="input-group">
+			<div class="input-group-btn">
+			  <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+			    choose<span class="caret"></span>
+			  </button>
+			  <ul class="dropdown-menu" id="driverdropdown" role="menu">
+			  </ul>
+			</div>
+			<input type="text" class="form-control">
+        </div>
+    	</div>
+        <div class="form-group">
+        <label class="col-sm-2 control-label">location</label><input><br/>
+        </div>
+        <div class="form-group">
+        <label class="col-sm-2 control-label">id for driver</label><input><br/>
+    	</div>
+    	</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="newEvent" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h4 class="modal-title" id="myModalLabel">Add an event</h4>
+      </div>
+      <div class="modal-body">
+      	<form class="form-horizontal" role="form">
+      	<div class="form-group">	
+        <label class="col-sm-2 control-label">name</label><input><br/>
+    	</div>
+        <div class="form-group">
+        <label class="col-sm-2 control-label">trigger driver</label><input><br/>
+	    </div>
+        <div class="form-group">
+        <label class="col-sm-2 control-label">location</label><input><br/>
+    	</div>
+        <div class="form-group">
+        <label class="col-sm-2 control-label">value</label><input><br/>
+	    </div>
+        <div class="form-group">
+        <label class="col-sm-2 control-label">actions</label><input><br/>
+    	</div>
+    	</form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary">Save changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+   function findTableRow(tablesel, element) {
         var td = $(element).parents("td");
         if (!td) td = element;
         var tr = $(element).parents("tr");
@@ -39,7 +155,7 @@
         })
         .done(function(data, textStatus, jqXHR) {
             // build html from the JSON returned
-            var htmlstr = '<table id="eventTable" class="tablesorter" cellspacing="1">'
+            var htmlstr = '<table id="eventTable" class="table table-bordered table-hover tablesorter" cellspacing="1">'
                 + '<thead><tr><th>run</th><th>edit</th><th>trigger</th><th>Actions</th>'
                 + '<th>latest</th>'
                 + '</tr></thead><tbody>';
@@ -59,7 +175,7 @@
             });
             htmlstr += '</tbody></table>';
 
-            $(evselector).append(htmlstr);
+            $(evselector).html(htmlstr);
             setTableSort("#eventTable",4);
 
             //$('#eventTable').tablesorter();
@@ -125,11 +241,12 @@
     		url: "/log"
     	})
     	.done(function(data,textStatus,jqXHR) {
+    		$("#logData").empty();
     		//var lines = data.reverse();
     		for (var i = 0; i < data.length; i++) {
     			var sp = data[i].indexOf(' ');
     			var tz = new Date(data[i].substr(0,sp)).format("isoTime");
-    			$("#logData").prepend("<p>" + tz + " " + data[i].substr(sp) + "</p>");
+    			$("#logData").prepend('<p class="tight">' + tz + " " + data[i].substr(sp) + "</p>");
     		}
     	});
     }
@@ -141,7 +258,7 @@
         })
         .done(function(data, textStatus, jqXHR) {
             // build html from the JSON returned
-            var htmlstr = '<table id="deviceTable" class="tablesorter" cellspacing="1">'
+            var htmlstr = '<table id="deviceTable" class="table table-bordered table-hover tablesorter" cellspacing="1">'
                 + '<thead><tr><th>name</th><th>location</th><th>driver</th><th>id</th>'
                 + '<th>state</th>'
                 + '<th>group</th>'
@@ -160,8 +277,9 @@
                 '</tr>';
             });
             htmlstr += '</tbody></table>';
-            $(evselector).empty();
-            $(evselector).append(htmlstr);
+            //$(evselector).empty();
+            $(evselector).html(htmlstr);
+
             setTableSort("#deviceTable",6);
 
             //$('#deviceTable').tablesorter();
@@ -196,172 +314,70 @@
 
     }
 
+var active;
 
-    function editDialog(selector) {
-        $(selector).dialog({modal: true, buttons: [
-            { text: "Ok", click: function() {
-                $( this ).dialog( "close" );
-            }},
-            { text: "Cancel", click: function() {
-                $( this ).dialog( "close" );
-            }}
-            ]
-        });
-        $(selector).css('visibility','visible');
-    }
+$('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+  	active = e.target.innerText;
+  	switch(e.target.innerText) {
+  	case 'Events':
+  		getEventTable("#events");
+  		break;
+  	case 'Devices':
+  		getDeviceTable("#devices");
+  		break;
+  	case 'Log':
+  		getLog("log");
+  		break;
+  }
+  console.log("yeow");
+  //e.relatedTarget // previous tab
+});
 
-    function lookupDriver(drivername,selector) {
+var gotdrivers = false;
 
-    }
+function showDeviceDialog() {
+	$("#driverdropdown a").on('click', function(e) {
+		$(e.target).text()
+		$(e.target).parent().parent().parent().parent().find("input").attr("value",$(e.target).text());
+	});
+	$('#newDevice').modal({backdrop: true, show:true});
+}
 
-    function setHeat() {
-    	// {do: "device", name: "thermo", value: "heatpoint", parm: 62} -->
-    	$.get("/cmd/device?name=thermo&value=heatpoint&parm=" + $("heatval").value);
-    }
+$("#additem").on('click', function(e) {
+	switch(active) {
+		case 'Events':
+			$('#newEvent').modal({backdrop: true, show:true});
+		break;
+		case 'Devices':
+			if (gotdrivers) {
+				showDeviceDialog();
+			}
+			else {
+				$.get("/drivers").
+				then(function(drivers) {
+					gotdrivers = true;
+				    for (var i = 0; i < drivers.length; i++) {
+				    	var html = '<li><a href="#">' + drivers[i] + '</a></li>';
+						$("#driverdropdown").append(html);
+					}
+					showDeviceDialog();
+				});
+			}
+		break;
+	}
+});
 
-    function setCool() {
-    	$.get("/cmd/device?name=thermo&value=coolpoint&parm=" + $("coolval").value);
-    }
+  $(function () {
+	getDeviceTable("#devices");
+    getEventTable("#events");
+    getSunTimes("#welcome");
+	getLog("log");
 
-    var curtab;
-    var curPanel;
+    $('#myTab a:first').tab('show');
 
-    $(function() {
-        $("#maintabs").tabs({
-        	beforeActivate: function(event,ui) {
-        		curtab = ui.newTab;
-        		curPanel = ui.newPanel;
-        		switch(curPanel.attr("id")) {
-        			case 'tabs-1': // devices
-        				getDeviceTable("#tabs-1");
-        				break;
-
-        			case 'tabs-2': // events
-        				getEventTable("#tabs=2");
-        				break;
-
-        			case 'tabs-3': //log
-        				getLog("#tabs-3")
-        				break;
-        		}
-        		console.log("here");
-
-        	}
-        });
-        $("#eventDialogTabs").tabs();
-        $( "input[type=submit], a, button" )
-            .button()
-            .click(function( event ) {
-                event.preventDefault();
-            });
-
-        getEventTable("#tabs-2");
-        getDeviceTable("#tabs-1");
-        getSunTimes("#welcome");
-        getLog("#tabs-3")
-    });
-    </script>
-</head>
-<body>
-<div id="welcome" style="font-size:14px">
-<div style="font-size:20px">Welcome to NodeHouse!</div>
-<br/>
-</div>
-<div id="maintabs">
-    <ul>
-        <li><a href="#tabs-1">Devices</a></li>
-        <li><a href="#tabs-2">Events</a></li>
-        <li><a href="#tabs-thermo">Thermostat</a></li>
-        <li><a href="#tabs-x">Edit</a></li>
-        <li><a href="#tabs-3">Log</a></li>
-    </ul>
-    <div id="tabs-x">
-        <a href="#" onclick="editDialog('#deviceDialog')">Add Device</a>
-        <a href="#" onclick="editDialog('#eventDialog')">Add Event</a>
-    </div>
-<!--
-    <div id="tabs-thermo">
-    	<a href="#" onclick="setHeat()"><input id="heatval" type="text" size="20">
-    	<br/>
-    	<a href="#" onclick="setCool()"><input id="coolval" type="text" size="20">
-    </div>
--->
-    <div id="tabs-1">
-    </div>
-    <div id="tabs-2">
-    </div>
-    <div id="tabs-3">
-        <button onclick="getLog()">Update</button>
-        <button onclick="logFilter()">Filter</button>
-        <input id="filter"></input>
-        <div id="logData">
-        </div>
-    </div>
-</div>
-
-<div class="demo-description">
-<p>Click tabs to swap between content that is broken into logical sections.</p>
-</div>
-
-<div id="deviceDialog" title="Add a device" style="visibility:hidden">
-    <table>
-        <tr>
-            <td>Device driver</td>
-            <td><input onblur="lookupDriver(this.value,'#deviceDialog')" type="text" size="20">
-                </td>
-        </tr>
-        <tr>
-            <td>Device name</td><td><input type="text" size="20"></td>
-        </tr>
-        <tr>
-            <td>Device location</td>
-            <td><input type="text" size="20"></td>
-        </tr>
-        <tr>
-            <td>Device id</td>
-            <td><input type="text" size="20"></td>
-        </tr>
-    </table>
-  <p>This is the default dialog which is useful for displaying information. The dialog window can be moved, resized and closed with the 'x' icon.</p>
-</div>
-
-<div id="eventDialog" title="Add an event" style="visibility:hidden">
-    Event name: <input type="text" size="20">
-    <div id="eventDialogTabs">
-    <ul>
-        <li><a href="#tabs-trigger">Trigger</a></li>
-        <li><a href="#tabs-action">Actions</a></li>
-    </ul>
-    <div id="tabs-trigger">
-    <table>
-        <tr>
-            <td><select>trigger on
-                <option>run event</option>
-                <option>set device</option>
-                <option>none</option>
-            </select>
-            </td>
-        </tr>
-        <tr>
-            <td>Device driver</td>
-            <td><input onblur="lookupDriver(this.value,'#deviceDialog')" type="text" size="20">
-                </td>
-        </tr>
-        <tr>
-            <td>Device id</td>
-            <td><input type="text" size="20"></td>
-        </tr>
-        <tr>
-            <td>Trigger state</td>
-            <td><input type="text" size="20"></td>
-        </tr>
-    </table>
-    </div>
-    <div id="tabs-actions">
-        actions stuff
-    </div>
+  });
+</script>
 
 
-
-</body>
+  </body>
 </html>

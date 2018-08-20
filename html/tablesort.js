@@ -427,7 +427,9 @@ $.tablesorter.addParser({
     }); 
 
 function setTableSort(elem, datecol) {
-    var parms = $.extend({ initialized: function (table) {
+
+    var parms = $.extend({ 
+    	initialized: function (table) {
 //        $(table).trigger('applyWidgets');
 //        $(table).trigger('applyWidgetId', ['zebra']);
  
@@ -435,8 +437,10 @@ function setTableSort(elem, datecol) {
                 datecol: { 
                     sorter:'mydates' 
                 } 
-            } 
-    }},defaults);
+            }
+        },
+        sortList: [[datecol,1]]
+    },defaults);
     $(elem).tablesorter(parms);
     //$('#eventTable').trigger('applyWidgets')
 }

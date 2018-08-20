@@ -16,6 +16,16 @@ function driverbase() {
             //g.log(g.LOG_TRACE,"cantrigger: set x10 " + id + " to " + val);
             return true;
         }
+        else {
+        	var since = now - states[id].last;
+	        if (since > RETRIGGER) {
+	        	states[id].last = now;
+	            g.log(g.LOG_TRACE,"retrigger x10 " + id + " to " + val);
+	            return true;
+	        }
+	        else cause="too recent";
+        }
+/*
         if (lastidval == id + val) {
 	        var since = now - states[id].last;
 	        states[id].last = now;
@@ -23,8 +33,11 @@ function driverbase() {
 	            g.log(g.LOG_TRACE,"retrigger x10 " + id + " to " + val);
 	            return true;
 	        }
+	        else cause="too recent";
 	    }
+
 	    lastidval = id + val;
+*/
         //g.log(g.LOG_TRACE,"cantrigger false for " + id + "," + val);
         return false;
     }

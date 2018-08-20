@@ -3,7 +3,7 @@ var driverBase = require("./driverBase");
 var util = require("util");
 var g = require("../globals");
 var ser2netproxy = require("../ser2netproxy.js");
-var serialport = require("serialport").SerialPort;
+var serialport = require("serialport");
 
 
 function serialDriverBase() {
@@ -13,10 +13,12 @@ function serialDriverBase() {
     driverBase.call(this);
 
     this.setDevice = function(basedev, baseparm, cb) {
+    	console.log("setDevice " + basedev + "," + baseparm);
     	nodeser = null;
     	g.log(g.LOG_TRACE,"set serial device: " + basedev);
         if ((basedev[0] == '/') || basedev.startsWith("COM")) {
-            nodeser = new serialport(basedev, baseparm, false);
+        	baseparm.autoOpen = false;
+            nodeser = new serialport(basedev, baseparm);
         }
         else if (basedev[0].match(/[0-9]/)) {
             var ncolon = basedev.indexOf(':');
@@ -37,12 +39,13 @@ function serialDriverBase() {
         	nodeser.on('error', function() {
         		g.log(g.LOG_ERROR,"nodser emitted error");
         		nodeser = {
-	            	'write': function(data) { 
+	            	'write': function(data) {
 	            		g.log(g.LOG_WARNING, "write to dummy serial device");
 	            		return;
 	            	 }
 	            };
         	});
+//        	nodeser.on("open", function() {
 	        nodeser.open(function() {
 	            nodeser.on('data', function(data) {
 	                // wait until last byte is '#' ?
